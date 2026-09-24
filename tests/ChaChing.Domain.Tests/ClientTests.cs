@@ -1,120 +1,120 @@
-﻿using ChaChing.Clients;
+using ChaChing.Domain.Clients;
 
-namespace ChaChing.Tests
+namespace ChaChing.Domain.Tests
 {
     public class ClientTests
     {
-        const string nomValide = "Arya";
-        const string nomChange = "Senza";
-        const string emailValide = "Arya@msn.fr";
-        const string emailChange = "Stark@msn.fr";
+        const string validName = "Arya";
+        const string changedName = "Senza";
+        const string validEmail = "Arya@msn.fr";
+        const string changedEmail = "Stark@msn.fr";
 
         [Fact]
-        public void Creer_DonneesValides_Assignees()
+        public void Create_ValidData_Assigned()
         {
-            Client client = Client.Creer(nomValide, emailValide);
+            Client client = Client.Create(validName, validEmail);
 
             Assert.NotEqual(Guid.Empty, client.Id);
-            Assert.Equal(nomValide, client.Nom);
-            Assert.Equal(emailValide, client.Email);
+            Assert.Equal(validName, client.Name);
+            Assert.Equal(validEmail, client.Email);
         }
 
         [Fact]
-        public void Creer_DonneesIdentiques_PasEgaux()
+        public void Create_SameData_NotEqual()
         {
-            Client clientA = Client.Creer(nomValide, emailValide);
-            Client clientB = Client.Creer(nomValide, emailValide);
+            Client clientA = Client.Create(validName, validEmail);
+            Client clientB = Client.Create(validName, validEmail);
 
             Assert.NotEqual(clientA, clientB);
         }
 
         [Fact]
-        public void IdIdentique_Egaux()
+        public void SameId_Equal()
         {
-            Client clientA = Client.Creer(nomValide, emailValide);
-            Client clientAA = Client.Reconstituer(clientA.Id, nomChange, emailChange);
+            Client clientA = Client.Create(validName, validEmail);
+            Client clientAA = Client.Rehydrate(clientA.Id, changedName, changedEmail);
 
             Assert.Equal(clientA, clientAA);
         }
 
-        //Creer_…_GenereUnId
+        //Create_…_GeneratesId
         [Fact]
-        public void Creer_GenereUnId()
+        public void Create_GeneratesId()
         {
-            Client client = Client.Creer(nomValide, emailValide);
+            Client client = Client.Create(validName, validEmail);
 
             Assert.NotEqual(Guid.Empty, client.Id);
         }
 
         [Fact]
-        public void Reconstituer_ConserveUnId()
+        public void Rehydrate_KeepsId()
         {
             Guid id = Guid.NewGuid();
 
-            Client client = Client.Reconstituer(id, nomValide, emailValide);
+            Client client = Client.Rehydrate(id, validName, validEmail);
 
             Assert.Equal(id, client.Id);
         }
 
         [Fact]
-        public void Reconstituer_IdVide_LeveException()
+        public void Rehydrate_EmptyId_Throws()
         {
-            var action = () => Client.Reconstituer(Guid.Empty, nomValide, emailValide);
+            var action = () => Client.Rehydrate(Guid.Empty, validName, validEmail);
 
             Assert.Throws<ArgumentException>(action);
         }
 
         [Theory]
-        [InlineData(" " + nomValide + " ", nomValide)]
-        [InlineData(" " + nomValide, nomValide)]
-        [InlineData(nomValide + " ", nomValide)]
-        [InlineData(nomValide + " " + nomValide, nomValide + " " + nomValide)]
-        public void Creer_NomAvecEspacesDebutFin_Nettoye(string nom, string nomAttendu)
+        [InlineData(" " + validName + " ", validName)]
+        [InlineData(" " + validName, validName)]
+        [InlineData(validName + " ", validName)]
+        [InlineData(validName + " " + validName, validName + " " + validName)]
+        public void Create_NameWithLeadingOrTrailingSpaces_Trimmed(string name, string expectedName)
         {
-            Client client = Client.Creer(nom, emailValide);
+            Client client = Client.Create(name, validEmail);
 
-            Assert.Equal(nomAttendu, client.Nom);
+            Assert.Equal(expectedName, client.Name);
         }
 
         [Theory]
         [InlineData("")]
         [InlineData("  ")]
         [InlineData(null)]
-        public void Creer_NomInvalide_LeveException(string? nom)
+        public void Create_InvalidName_Throws(string? name)
         {
-            var action = () => Client.Creer(nom!, emailValide); // ! : on force le null exprès, c'est le cas testé
+            var action = () => Client.Create(name!, validEmail); // ! : null is forced on purpose, it is the case under test
 
             Assert.Throws<ArgumentException>(action);
         }
 
         [Theory]
-        [InlineData("emailSansArobas")]
+        [InlineData("emailWithoutAtSign")]
         [InlineData("")]
         [InlineData("  ")]
         [InlineData(null)]
-        public void Creer_EmailInvalide_LeveException(string? email)
+        public void Create_InvalidEmail_Throws(string? email)
         {
-            var action = () => Client.Creer(nomValide, email!); // ! : on force le null exprès, c'est le cas testé
+            var action = () => Client.Create(validName, email!); // ! : null is forced on purpose, it is the case under test
 
             Assert.Throws<ArgumentException>(action);
         }
 
         [Fact]
-        public void Creer_ChangerEmail_EmailValide_Assigne()
+        public void Create_ChangeEmail_ValidEmail_Assigned()
         {
-            Client client = Client.Creer(nomValide, emailValide);
+            Client client = Client.Create(validName, validEmail);
 
-            client.ChangerEmail(emailChange);
+            client.ChangeEmail(changedEmail);
 
-            Assert.Equal(emailChange, client.Email);
+            Assert.Equal(changedEmail, client.Email);
         }
 
         [Fact]
-        public void Creer_ChangerEmail_EmailInvalide_LeveException()
+        public void Create_ChangeEmail_InvalidEmail_Throws()
         {
-            Client client = Client.Creer(nomValide, emailValide);
+            Client client = Client.Create(validName, validEmail);
 
-            var action = () => client.ChangerEmail(nomValide);
+            var action = () => client.ChangeEmail(validName);
 
             Assert.Throws<ArgumentException>(action);
         }

@@ -1,84 +1,84 @@
-﻿using ChaChing.Facturation;
+using ChaChing.Domain.Billing;
 
-namespace ChaChing.Tests
+namespace ChaChing.Domain.Tests
 {
     public class MoneyTests
     {
-        static readonly Money dixEuros = new Money(10m, Devise.EUR);
-        static readonly Money douzeEuros = new Money(12m, Devise.EUR);
-        static readonly Money douzeDollars = new Money(12m, Devise.USD);
+        static readonly Money tenEuros = new Money(10m, Currency.EUR);
+        static readonly Money twelveEuros = new Money(12m, Currency.EUR);
+        static readonly Money twelveDollars = new Money(12m, Currency.USD);
 
         [Fact]
-        public void DeuxMoneys_Identiques_Egaux() => Assert.Equal(douzeEuros, new Money(12m, Devise.EUR));
+        public void TwoMoneys_Identical_Equal() => Assert.Equal(twelveEuros, new Money(12m, Currency.EUR));
 
         [Fact]
-        public void DeuxMoneys_Differents_PasEgaux() => Assert.NotEqual(dixEuros, douzeEuros);
+        public void TwoMoneys_Different_NotEqual() => Assert.NotEqual(tenEuros, twelveEuros);
 
         [Theory]
-        [InlineData(Devise.EUR)]
-        [InlineData(Devise.USD)]
-        [InlineData(Devise.GBP)]
-        public void Devise_Valide_Assignee(Devise devise)
+        [InlineData(Currency.EUR)]
+        [InlineData(Currency.USD)]
+        [InlineData(Currency.GBP)]
+        public void Currency_Valid_Assigned(Currency currency)
         {
-            Money moneyA = new Money(10m, devise);
+            Money moneyA = new Money(10m, currency);
 
-            Assert.Equal(devise, moneyA.Devise);
+            Assert.Equal(currency, moneyA.Currency);
         }
 
         [Fact]
-        public void Devise_Invalide_LeveException()
+        public void Currency_Invalid_Throws()
         {
-            var action = () => new Money(10m, (Devise)888);
+            var action = () => new Money(10m, (Currency)888);
 
             Assert.Throws<ArgumentException>(action);
         }
 
         [Fact]
-        public void Ajouter_Montants_RenvoieLaSomme()
+        public void Add_Amounts_ReturnsSum()
         {
-            Money money = dixEuros.Ajouter(douzeEuros);
+            Money money = tenEuros.Add(twelveEuros);
 
-            Assert.Equal(22m, money.Montant);
-            Assert.Equal(Devise.EUR, money.Devise);
+            Assert.Equal(22m, money.Amount);
+            Assert.Equal(Currency.EUR, money.Currency);
         }
 
         [Fact]
-        public void Montants_OperatorPlus_RenvoieLaSomme()
+        public void Amounts_PlusOperator_ReturnsSum()
         {
-            Money money = dixEuros + douzeEuros;
+            Money money = tenEuros + twelveEuros;
 
-            Assert.Equal(22m, money.Montant);
+            Assert.Equal(22m, money.Amount);
         }
 
         [Fact]
-        public void Ajouter_DevisesDifferentes_LeveException()
+        public void Add_DifferentCurrencies_Throws()
         {
-            var action = () => dixEuros.Ajouter(douzeDollars);
+            var action = () => tenEuros.Add(twelveDollars);
 
             Assert.Throws<ArgumentException>(action);
         }
 
         [Fact]
-        public void Soustraire_Montants_RenvoieLaDifference()
+        public void Subtract_Amounts_ReturnsDifference()
         {
-            Money money = dixEuros.Soustraire(douzeEuros);
+            Money money = tenEuros.Subtract(twelveEuros);
 
-            Assert.Equal(-2m, money.Montant);
-            Assert.Equal(Devise.EUR, money.Devise);
+            Assert.Equal(-2m, money.Amount);
+            Assert.Equal(Currency.EUR, money.Currency);
         }
 
         [Fact]
-        public void Montants_OperatorMoins_RenvoieLaSomme()
+        public void Amounts_MinusOperator_ReturnsSum()
         {
-            Money money = dixEuros - douzeEuros;
+            Money money = tenEuros - twelveEuros;
 
-            Assert.Equal(-2m, money.Montant);
+            Assert.Equal(-2m, money.Amount);
         }
 
         [Fact]
-        public void Soustraire_DevisesDifferentes_LeveException()
+        public void Subtract_DifferentCurrencies_Throws()
         {
-            var action = () => dixEuros.Soustraire(douzeDollars);
+            var action = () => tenEuros.Subtract(twelveDollars);
 
             Assert.Throws<ArgumentException>(action);
         }
@@ -90,55 +90,55 @@ namespace ChaChing.Tests
         [InlineData(1.725, 17.25)]
         [InlineData(1.7215, 17.22)]
         [InlineData(1.7225, 17.22)]
-        public void Multiplier_Montants_RenvoieLeResultat(decimal facteur, decimal result)
+        public void Multiply_Amounts_ReturnsResult(decimal factor, decimal result)
         {
-            Money money = dixEuros.Multiplier(facteur);
+            Money money = tenEuros.Multiply(factor);
 
-            Assert.Equal(result, money.Montant);
-            Assert.Equal(Devise.EUR, money.Devise);
+            Assert.Equal(result, money.Amount);
+            Assert.Equal(Currency.EUR, money.Currency);
         }
 
         [Fact]
-        public void Montants_OperatorFois_RenvoieLaSomme()
+        public void Amounts_TimesOperator_ReturnsSum()
         {
-            Money money = dixEuros * 1.5m;
+            Money money = tenEuros * 1.5m;
 
-            Assert.Equal(15m, money.Montant);
+            Assert.Equal(15m, money.Amount);
         }
 
         [Fact]
-        public void Multiplier_Montants_ArronditEnEven()
+        public void Multiply_Amounts_RoundsToEven()
         {
-            Money money = dixEuros.Multiplier(1.7225m);
+            Money money = tenEuros.Multiply(1.7225m);
 
-            Assert.Equal(17.22m, money.Montant);
-            Assert.Equal(Devise.EUR, money.Devise);
+            Assert.Equal(17.22m, money.Amount);
+            Assert.Equal(Currency.EUR, money.Currency);
         }
 
         [Fact]
-        public void Zero_DeviseInvalide_LeveException()
+        public void Zero_InvalidCurrency_Throws()
         {
-            var action = () => Money.Zero((Devise)999);
+            var action = () => Money.Zero((Currency)999);
 
             Assert.Throws<ArgumentException>(action);
         }
 
         [Fact]
-        public void Zero_DeviseValide_RenvoieZero()
+        public void Zero_ValidCurrency_ReturnsZero()
         {
-            var money = Money.Zero(Devise.GBP);
+            var money = Money.Zero(Currency.GBP);
 
-            Assert.Equal(0m, money.Montant);
-            Assert.Equal(Devise.GBP, money.Devise);
+            Assert.Equal(0m, money.Amount);
+            Assert.Equal(Currency.GBP, money.Currency);
         }
 
         [Fact]
-        public void Zero_Ajouter10Euros_Vaut10Euros()
+        public void Zero_AddTenEuros_EqualsTenEuros()
         {
-            Money money = Money.Zero(Devise.EUR).Ajouter(dixEuros);
+            Money money = Money.Zero(Currency.EUR).Add(tenEuros);
 
-            Assert.Equal(10m, money.Montant);
-            Assert.Equal(Devise.EUR, money.Devise);
+            Assert.Equal(10m, money.Amount);
+            Assert.Equal(Currency.EUR, money.Currency);
         }
     }
 }
