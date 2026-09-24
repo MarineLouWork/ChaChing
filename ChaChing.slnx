@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ChaChing.Domain/ChaChing.Domain.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ChaChing.Domain.Tests/ChaChing.Domain.Tests.csproj" />
+  </Folder>
+</Solution>
