@@ -14,5 +14,6 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0005](0005-money-read-only-properties.md) | `Money` properties are read-only | Accepted |
 | [0006](0006-money-rounding-at-construction.md) | Rounding to 2 decimals, at construction | Accepted |
 | [0007](0007-discount-interface-then-abstract-class.md) | `IDiscount` + abstract class for the shared code | Proposed |
+| [0008](0008-projects-created-when-needed.md) | One solution, projects created only when a layer needs them | Accepted |
 
 ADRs 0001 to 0007 were written in French in the `Katas` repository, then imported and translated on 24/09/2026. The code names were translated at the same time (`Remise` → `Discount`, `Devise` → `Currency`, `Creer` → `Create`…).
