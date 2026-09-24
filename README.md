@@ -1,12 +1,13 @@
 # ChaChing
 
-Quotes and invoicing for freelancers.
+The Billing App for creative freelancers.
 
 **Stack:** .NET 10 · C# · xUnit — then SQL Server, EF Core, ASP.NET Core and Angular.
 
 ## Architecture
 
-The target architecture. Only the **Domain** exists today: the other layers are created when a feature needs them.
+The target architecture. 
+Only the **Domain** exists today, the other layers will be created when needed.
 
 ```
                     ┌──────────────────────┐
@@ -35,7 +36,8 @@ The target architecture. Only the **Domain** exists today: the other layers are 
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**The rule:** dependencies point towards the Domain, never the other way round. The Domain knows nothing about the database or HTTP, so business rules are tested without starting anything.
+**The rule:** dependencies point towards the Domain, never the other way round. 
+The Domain knows nothing about the database or HTTP, so business rules are tested without starting anything.
 
 ## Solution layout
 
