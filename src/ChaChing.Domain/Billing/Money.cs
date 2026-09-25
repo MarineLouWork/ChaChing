@@ -2,13 +2,13 @@ namespace ChaChing.Domain.Billing
 {
     public record Money(decimal Amount, Currency Currency)
     {
-        public decimal Amount { get; } = ValidateAmount(Amount);
+        public decimal Amount { get; } = RoundAmount(Amount);
 
         public Currency Currency { get; } = ValidateCurrency(Currency);
 
         public static Money Zero(Currency currency) => new Money(0m, currency);
 
-        static decimal ValidateAmount(decimal amount) => Math.Round(amount, 2, MidpointRounding.ToEven);
+        static decimal RoundAmount(decimal amount) => Math.Round(amount, 2, MidpointRounding.ToEven);
 
         static Currency ValidateCurrency(Currency currency)
         {

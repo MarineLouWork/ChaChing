@@ -11,7 +11,7 @@ namespace ChaChing.Domain.Billing.Discounts
 
         private static void ValidateRate(decimal rate)
         {
-            if (rate <= 0m || rate > 100m)
+            if (rate < 0m || rate > 100m)
                 throw new ArgumentException("The discount rate is not valid.", nameof(rate));
         }
 

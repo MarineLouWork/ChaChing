@@ -68,7 +68,7 @@ namespace ChaChing.Domain.Tests
         }
 
         [Fact]
-        public void Amounts_MinusOperator_ReturnsSum()
+        public void Amounts_MinusOperator_ReturnsDifference()
         {
             Money money = tenEuros - twelveEuros;
 
@@ -99,7 +99,7 @@ namespace ChaChing.Domain.Tests
         }
 
         [Fact]
-        public void Amounts_TimesOperator_ReturnsSum()
+        public void Amounts_TimesOperator_ReturnsResult()
         {
             Money money = tenEuros * 1.5m;
 
