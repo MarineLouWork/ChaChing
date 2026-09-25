@@ -6,7 +6,7 @@
 
 Validation placed in a property initializer is **not replayed by `with`**: the generated copy constructor copies the fields, then writes the listed properties through their `init` accessor. `money with { Currency = (Currency)888 }` therefore produced an invalid `Money`.
 
-Behaviour checked in a throwaway project. The `init` accessor workaround works, but it *also* requires an initializer fed by the primary constructor parameter; otherwise that parameter is never read (warning `CS8907`) and the value stays at `default`.
+Behaviour checked in a throwaway project. The `init` accessor workaround works, but it _also_ requires an initializer fed by the primary constructor parameter; otherwise that parameter is never read (warning `CS8907`) and the value stays at `default`.
 
 ## Decision
 
