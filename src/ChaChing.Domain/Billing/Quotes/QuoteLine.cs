@@ -15,11 +15,11 @@ namespace ChaChing.Domain.Billing.Quotes
 
         public Guid Id { get; }
 
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
-        public decimal Quantity { get; set; }
+        public decimal Quantity { get; private set; }
 
-        public Money UnitPrice { get; set; }
+        public Money UnitPrice { get; private set; }
 
         public Money TotalPrice
         {
