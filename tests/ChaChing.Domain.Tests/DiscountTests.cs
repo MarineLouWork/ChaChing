@@ -9,6 +9,7 @@ namespace ChaChing.Domain.Tests
         static readonly FixedAmountDiscount threeEurosDiscount = new(new Money(3m, Currency.EUR));
         static readonly PercentageDiscount tenPercentDiscount = new PercentageDiscount(10m);
 
+        #region FixedAmountDiscount
         [Fact]
         public void FixedDiscount_0Euros_DoesNotThrow()
         {
@@ -55,8 +56,9 @@ namespace ChaChing.Domain.Tests
 
             Assert.Throws<ArgumentException>(action);
         }
+        #endregion
 
-
+        #region PercentageDiscount
         [Fact]
         public void PercentageDiscount_TenPercent_Applied()
         {
@@ -89,6 +91,7 @@ namespace ChaChing.Domain.Tests
 
             Assert.Throws<ArgumentException>(action);
         }
+        #endregion
 
         [Fact]
         public void Discounts_PercentageThenFixed_Applied()
@@ -104,6 +107,5 @@ namespace ChaChing.Domain.Tests
             Assert.Equal(6m, balance.Amount);
             Assert.Equal(Currency.EUR, balance.Currency);
         }
-
     }
 }

@@ -8,6 +8,7 @@ namespace ChaChing.Domain.Tests
     {
         static readonly Money fiveHundredEuros = new Money(500m, Currency.EUR);
 
+        #region QuoteLine Tests
         [Fact]
         public void QuoteLine_Allocated_IsValid()
         {
@@ -65,5 +66,6 @@ namespace ChaChing.Domain.Tests
 
             Assert.Equal(1350m, quoteLine.TotalPrice.Amount);
         }
+        #endregion
     }
 }
