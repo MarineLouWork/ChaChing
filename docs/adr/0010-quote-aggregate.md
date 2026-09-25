@@ -18,10 +18,11 @@ A quote holds lines, and rules that span several objects at once: a single curre
   - at least one line to be **sent**; an empty draft is allowed;
   - no maximum number of lines;
   - the total is never negative. A refund or a credit note never goes through a quote: it will be a **separate document**, attached to an invoice.
-- **Invariants of `QuoteLine`:** a description, a quantity **> 0** (a line of 0 units makes no sense), a unit price **≥ 0** (a free service is allowed).
+- **Invariants of `QuoteLine`:** a description, a quantity **> 0** in `decimal` (a line of 0 units makes no sense; half a day can be billed), a unit price **≥ 0**. A line at €0 is a **non-billable line**, included elsewhere (in a package) but shown on the quote. Offering a service is done with a **100 % discount**, not with a price of 0.
 - **Discounts live at both levels:** on a line and on the quote total. Line discounts are applied first, then the total's.
 - **Lifecycle:** `Draft` → `Sent` → `Accepted` or `Refused`. Only a draft can be edited. An **accepted** quote is final. A **refused** quote can go back to `Draft` to be reworked.
 - **Lines are free text** (description, quantity, unit price). No product catalogue for the MVP.
+- **`QuoteLine` has a single public constructor**, no `Create` / `Rehydrate` factories: lines are always created new (by `Quote.AddLine`, later), and EF Core rebuilds entities through reflection. Following ADR 0002, factories are only justified when two entry points have different invariants.
 
 ## Consequences
 
