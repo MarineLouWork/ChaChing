@@ -16,8 +16,9 @@ A quote holds lines, and rules that span several objects at once: a single curre
   - always one client (`ClientId` set);
   - the total is **computed**, never stored, so it cannot drift from the lines;
   - at least one line to be **sent**; an empty draft is allowed;
-  - no maximum number of lines.
-- **Invariants of `QuoteLine`:** a description, a unit price ≥ 0.
+  - no maximum number of lines;
+  - the total is never negative. A refund or a credit note never goes through a quote: it will be a **separate document**, attached to an invoice.
+- **Invariants of `QuoteLine`:** a description, a quantity **> 0** (a line of 0 units makes no sense), a unit price **≥ 0** (a free service is allowed).
 - **Discounts live at both levels:** on a line and on the quote total. Line discounts are applied first, then the total's.
 - **Lifecycle:** `Draft` → `Sent` → `Accepted` or `Refused`. Only a draft can be edited. An **accepted** quote is final. A **refused** quote can go back to `Draft` to be reworked.
 - **Lines are free text** (description, quantity, unit price). No product catalogue for the MVP.
