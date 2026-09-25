@@ -16,5 +16,6 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0007](0007-discount-abstract-class.md) | `Discount` is an abstract class; its contract announces the currency exception | Accepted |
 | [0008](0008-projects-created-when-needed.md) | One solution, projects created only when a layer needs them | Accepted |
 | [0009](0009-discount-business-rules.md) | Discounts: zero accepted, rates from 0 to 100 % | Accepted |
+| [0010](0010-quote-aggregate.md) | `Quote` is an aggregate, `QuoteLine` a local entity | Accepted |
 
 ADRs 0001 to 0007 were written in French in the `Katas` repository, then imported and translated on 24/09/2026. The code names were translated at the same time (`Remise` → `Discount`, `Devise` → `Currency`, `Creer` → `Create`…).
