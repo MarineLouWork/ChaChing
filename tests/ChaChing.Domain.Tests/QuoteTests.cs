@@ -31,16 +31,34 @@ namespace ChaChing.Domain.Tests
             Assert.Throws<ArgumentException>(action);
         }
 
-        [Fact]
-        public void QuoteLine_WithZeroQuantity_Throws()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-0.01)]
+        public void QuoteLine_WithInvalidQuantity_Throws(decimal quantity)
         {
-            var action = () => new QuoteLine("valid description", 0, fiveHundredEuros);
+            var action = () => new QuoteLine("valid description", quantity, fiveHundredEuros);
 
             Assert.Throws<ArgumentException>(action);
         }
 
         [Fact]
-        public void QuoteLine_WithNegativeOrNullUnitPrice_Throws()
+        public void QuoteLine_WithSpecificQuantity_IsValid()
+        {
+            QuoteLine ValidQuoteLine = new("valid description", 0.01m, fiveHundredEuros);
+
+            Assert.Equal(0.01m, ValidQuoteLine.Quantity);
+        }
+
+        [Fact]
+        public void QuoteLine_WithNoPrice_IsValid()
+        {
+            QuoteLine ValidQuoteLine = new("valid description", 1m, new Money(0m, Currency.EUR));
+
+            Assert.Equal(new Money(0m, Currency.EUR), ValidQuoteLine.UnitPrice);
+        }
+
+        [Fact]
+        public void QuoteLine_WithNegativeUnitPrice_Throws()
         {
             var action = () => new QuoteLine("valid description", 2m, new Money(-0.01m, Currency.EUR));
 
