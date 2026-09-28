@@ -1,6 +1,7 @@
 ﻿using ChaChing.Domain.Billing;
 using ChaChing.Domain.Billing.Discounts;
 using ChaChing.Domain.Billing.Quotes;
+using ChaChing.Domain.Billing.Taxes;
 
 namespace ChaChing.Domain.Tests
 {
@@ -83,6 +84,24 @@ namespace ChaChing.Domain.Tests
             QuoteLine quoteLine = new("valid description", 3, fiveHundredEuros, tenPercentDiscount);
 
             Assert.Equal(1350m, quoteLine.TotalPrice.Amount);
+        }
+        #endregion
+
+        #region VAT rate (ADR 0014)
+        [Fact]
+        public void QuoteLine_WithoutVatRate_IsStandardRate()
+        {
+            QuoteLine quoteLine = new("valid description", 1m, fiveHundredEuros);
+
+            Assert.Equal(VatRate.Standard, quoteLine.VatRate);
+        }
+
+        [Fact]
+        public void QuoteLine_WithVatRate_KeepsIt()
+        {
+            QuoteLine quoteLine = new("valid description", 1m, fiveHundredEuros, vatRate: VatRate.Of(5.5m));
+
+            Assert.Equal(VatRate.Of(5.5m), quoteLine.VatRate);
         }
         #endregion
 

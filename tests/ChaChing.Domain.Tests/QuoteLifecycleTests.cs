@@ -1,5 +1,9 @@
 using ChaChing.Domain.Billing;
+using ChaChing.Domain.Billing.Parties;
 using ChaChing.Domain.Billing.Quotes;
+using ChaChing.Domain.Billing.Taxes;
+using ChaChing.Domain.Clients;
+using ChaChing.Domain.Sellers;
 
 namespace ChaChing.Domain.Tests
 {
@@ -8,12 +12,16 @@ namespace ChaChing.Domain.Tests
         static readonly QuoteNumber number = new(2026, 42);
         static readonly DateOnly issueDate = new(2026, 9, 28);
         static readonly DateOnly validUntil = new(2026, 10, 28);
+        static readonly Seller seller = TestData.Seller();
+        static readonly Client client = TestData.Client(seller.Id);
+        static readonly SellerSnapshot sellerSnapshot = SellerSnapshot.From(seller);
+        static readonly ClientSnapshot clientSnapshot = ClientSnapshot.From(client);
 
         static QuoteLine Line() => new("valid description", 1m, new Money(100m, Currency.EUR));
 
         static Quote DraftWithOneLine()
         {
-            Quote quote = Quote.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), Currency.EUR);
+            Quote quote = Quote.CreateDraft(seller.Id, client.Id, Currency.EUR);
             quote.AddLine(Line());
             return quote;
         }
@@ -21,7 +29,7 @@ namespace ChaChing.Domain.Tests
         static Quote SentQuote()
         {
             Quote quote = DraftWithOneLine();
-            quote.MarkAsSent(number, issueDate, validUntil);
+            quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, clientSnapshot);
             return quote;
         }
 
@@ -45,7 +53,7 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = DraftWithOneLine();
 
-            quote.MarkAsSent(number, issueDate, validUntil);
+            quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, clientSnapshot);
 
             Assert.Equal(QuoteStatus.Sent, quote.Status);
             Assert.Equal(number, quote.Number);
@@ -56,9 +64,9 @@ namespace ChaChing.Domain.Tests
         [Fact]
         public void MarkAsSent_DraftWithoutLines_ThrowsAndStaysDraft()
         {
-            Quote quote = Quote.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), Currency.EUR);
+            Quote quote = Quote.CreateDraft(seller.Id, client.Id, Currency.EUR);
 
-            var action = () => quote.MarkAsSent(number, issueDate, validUntil);
+            var action = () => quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, clientSnapshot);
 
             Assert.Throws<InvalidOperationException>(action);
             Assert.Equal(QuoteStatus.Draft, quote.Status);
@@ -70,7 +78,7 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = DraftWithOneLine();
 
-            var action = () => quote.MarkAsSent(null!, issueDate, validUntil);
+            var action = () => quote.MarkAsSent(null!, issueDate, validUntil, sellerSnapshot, clientSnapshot);
 
             Assert.Throws<ArgumentNullException>(action);
         }
@@ -80,7 +88,7 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = DraftWithOneLine();
 
-            var action = () => quote.MarkAsSent(number, issueDate, issueDate.AddDays(-1));
+            var action = () => quote.MarkAsSent(number, issueDate, issueDate.AddDays(-1), sellerSnapshot, clientSnapshot);
 
             Assert.Throws<ArgumentException>(action);
             Assert.Equal(QuoteStatus.Draft, quote.Status);
@@ -91,7 +99,7 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = DraftWithOneLine();
 
-            quote.MarkAsSent(number, issueDate, issueDate);
+            quote.MarkAsSent(number, issueDate, issueDate, sellerSnapshot, clientSnapshot);
 
             Assert.Equal(QuoteStatus.Sent, quote.Status);
         }
@@ -101,7 +109,7 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = SentQuote();
 
-            var action = () => quote.MarkAsSent(number, issueDate, validUntil);
+            var action = () => quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, clientSnapshot);
 
             Assert.Throws<InvalidOperationException>(action);
         }
@@ -207,7 +215,7 @@ namespace ChaChing.Domain.Tests
             Quote quote = DeclinedQuote();
             quote.ReturnToDraft();
 
-            quote.MarkAsSent(number, issueDate.AddDays(5), validUntil.AddDays(5));
+            quote.MarkAsSent(number, issueDate.AddDays(5), validUntil.AddDays(5), sellerSnapshot, clientSnapshot);
 
             Assert.Equal(QuoteStatus.Sent, quote.Status);
             Assert.Equal(issueDate.AddDays(5), quote.IssueDate);
@@ -219,7 +227,7 @@ namespace ChaChing.Domain.Tests
             Quote quote = DeclinedQuote();
             quote.ReturnToDraft();
 
-            var action = () => quote.MarkAsSent(new QuoteNumber(2026, 43), issueDate, validUntil);
+            var action = () => quote.MarkAsSent(new QuoteNumber(2026, 43), issueDate, validUntil, sellerSnapshot, clientSnapshot);
 
             Assert.Throws<InvalidOperationException>(action);
         }
@@ -271,6 +279,101 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line());
 
             Assert.Equal(2, quote.Lines.Count);
+        }
+        #endregion
+
+        #region Snapshots (ADR 0019) — for Marine
+        [Fact]
+        public void MarkAsSent_TakesBothSnapshots()
+        {
+            Quote quote = DraftWithOneLine();
+
+            quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, clientSnapshot);
+
+            Assert.Same(sellerSnapshot, quote.SellerSnapshot);
+            Assert.Same(clientSnapshot, quote.ClientSnapshot);
+        }
+
+        [Fact]
+        public void Draft_HasNoSnapshots()
+        {
+            Quote quote = DraftWithOneLine();
+
+            Assert.Null(quote.SellerSnapshot);
+            Assert.Null(quote.ClientSnapshot);
+        }
+
+        [Fact]
+        public void MarkAsSent_WithNullSellerSnapshot_Throws()
+        {
+            Quote quote = DraftWithOneLine();
+
+            var action = () => quote.MarkAsSent(number, issueDate, validUntil, null!, clientSnapshot); // ! : null is forced on purpose, it is the case under test
+
+            Assert.Throws<ArgumentNullException>(action);
+        }
+
+        [Fact]
+        public void MarkAsSent_WithNullClientSnapshot_Throws()
+        {
+            Quote quote = DraftWithOneLine();
+
+            var action = () => quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, null!); // ! : null is forced on purpose, it is the case under test
+
+            Assert.Throws<ArgumentNullException>(action);
+        }
+
+        [Fact]
+        public void MarkAsSent_WithAnotherSellerSnapshot_ThrowsAndStaysDraft()
+        {
+            Quote quote = DraftWithOneLine();
+            SellerSnapshot otherSeller = SellerSnapshot.From(TestData.Seller());
+
+            var action = () => quote.MarkAsSent(number, issueDate, validUntil, otherSeller, clientSnapshot);
+
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("seller", exception.ParamName);
+            Assert.Equal(QuoteStatus.Draft, quote.Status);
+            Assert.Null(quote.SellerSnapshot);
+        }
+
+        [Fact]
+        public void MarkAsSent_WithAnotherClientSnapshot_ThrowsAndStaysDraft()
+        {
+            Quote quote = DraftWithOneLine();
+            ClientSnapshot otherClient = ClientSnapshot.From(TestData.Client(seller.Id));
+
+            var action = () => quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, otherClient);
+
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("client", exception.ParamName);
+            Assert.Equal(QuoteStatus.Draft, quote.Status);
+            Assert.Null(quote.ClientSnapshot);
+        }
+
+        [Fact]
+        public void MarkAsSent_ExemptSellerWithVatLine_ThrowsAndStaysDraft()
+        {
+            Seller exemptSeller = TestData.Seller(VatRegime.Exempt);
+            Quote quote = Quote.CreateDraft(exemptSeller.Id, client.Id, Currency.EUR);
+            quote.AddLine(Line());      // 20 % by default
+
+            var action = () => quote.MarkAsSent(number, issueDate, validUntil, SellerSnapshot.From(exemptSeller), clientSnapshot);
+
+            Assert.Throws<InvalidOperationException>(action);
+            Assert.Equal(QuoteStatus.Draft, quote.Status);
+        }
+
+        [Fact]
+        public void MarkAsSent_ExemptSellerWithExemptLines_IsSent()
+        {
+            Seller exemptSeller = TestData.Seller(VatRegime.Exempt);
+            Quote quote = Quote.CreateDraft(exemptSeller.Id, client.Id, Currency.EUR);
+            quote.AddLine(new QuoteLine("valid description", 1m, new Money(100m, Currency.EUR), vatRate: VatRate.Exempt));
+
+            quote.MarkAsSent(number, issueDate, validUntil, SellerSnapshot.From(exemptSeller), clientSnapshot);
+
+            Assert.Equal(QuoteStatus.Sent, quote.Status);
         }
         #endregion
     }

@@ -1,4 +1,6 @@
 using ChaChing.Domain.Billing.Discounts;
+using ChaChing.Domain.Billing.Parties;
+using ChaChing.Domain.Billing.Taxes;
 
 namespace ChaChing.Domain.Billing.Quotes
 {
@@ -14,7 +16,6 @@ namespace ChaChing.Domain.Billing.Quotes
             Discount = discount;
         }
 
-        /// <summary>A quote is always born as an empty draft.</summary>
         public static Quote CreateDraft(Guid sellerId, Guid clientId, Currency currency, Discount? discount = null) => new Quote(sellerId, clientId, currency, discount);
 
         public Guid Id { get; }
@@ -43,50 +44,81 @@ namespace ChaChing.Domain.Billing.Quotes
 
         public Discount? Discount { get; }
 
-        // Later:
-        // SellerSnapshot? SellerSnapshot, ClientSnapshot? ClientSnapshot (taken by Send)
-        // Money TotalVat, TotalInclTax
-        // Rehydrate(...) only if persistence needs it (ADR 0016)
+        public SellerSnapshot? SellerSnapshot { get; private set; }
 
-        #region Lifecycle (ADR 0018)
-        // The domain records what happened; it does not send any email itself: hence "MarkAs…".
+        public ClientSnapshot? ClientSnapshot { get; private set; }
 
-        /// <summary>Draft → Sent. At least one line; validUntil not before issueDate; a quote keeps its number forever.</summary>
-        public void MarkAsSent(QuoteNumber number, DateOnly issueDate, DateOnly validUntil)
+        #region VAT (ADR 0020) — TODO Marine
+        /// <summary>
+        /// One subtotal per VAT rate: the taxable amount (after the quote discount, shared pro rata between the rates)
+        /// and its VAT. The taxable amounts always add up to <see cref="TotalExclTax"/>.
+        /// </summary>
+        public IReadOnlyList<VatSubtotal> VatBreakdown
+        {
+            get => throw new NotImplementedException();
+        }
+
+        /// <summary>The sum of the VAT of each rate.</summary>
+        public Money TotalVat
+        {
+            get => throw new NotImplementedException();
+        }
+
+        /// <summary><see cref="TotalExclTax"/> + <see cref="TotalVat"/>.</summary>
+        public Money TotalInclTax
+        {
+            get => throw new NotImplementedException();
+        }
+        #endregion
+
+        #region Lifecycle (ADR 0018, 0019)
+
+        public void MarkAsSent(QuoteNumber number, DateOnly issueDate, DateOnly validUntil, SellerSnapshot seller, ClientSnapshot client)
         {
             ArgumentNullException.ThrowIfNull(number);
-            EnsureStatus(QuoteStatus.Draft);
+            ArgumentNullException.ThrowIfNull(client);
+            ArgumentNullException.ThrowIfNull(seller);
 
-            if (_lines.Count == 0)
-                throw new InvalidOperationException("A quote without lines cannot be sent.");
+            EnsureStatus(QuoteStatus.Draft);
 
             if (validUntil < issueDate)
                 throw new ArgumentException("The validity date cannot be before the issue date.", nameof(validUntil));
 
+            if (_lines.Count == 0)
+                throw new InvalidOperationException("A quote without lines cannot be sent.");
+
             if (Number != null && Number != number)
                 throw new InvalidOperationException($"This quote already has the number {Number}.");
+
+            if (client.ClientId != ClientId)
+                throw new InvalidOperationException("The client is not valid.");
+
+            if (client.ClientId != ClientId)
+                throw new InvalidOperationException("The seller is not valid.");
+
+            if (seller.VatRegime == VatRegime.Exempt && _lines.Any(line => !line.VatRate.IsExempt))
+                throw new InvalidOperationException("An exempt seller cannot send lines with VAT.");
 
             Number = number;
             IssueDate = issueDate;
             ValidUntil = validUntil;
             Status = QuoteStatus.Sent;
+            ClientSnapshot = client;
+            SellerSnapshot = seller;
         }
 
-        /// <summary>Sent → Accepted.</summary>
         public void MarkAsAccepted()
         {
             EnsureStatus(QuoteStatus.Sent);
             Status = QuoteStatus.Accepted;
         }
 
-        /// <summary>Sent → Declined.</summary>
         public void MarkAsDeclined()
         {
             EnsureStatus(QuoteStatus.Sent);
             Status = QuoteStatus.Declined;
         }
 
-        /// <summary>Declined → Draft, to rework it. Keeps its number.</summary>
         public void ReturnToDraft()
         {
             EnsureStatus(QuoteStatus.Declined);
@@ -116,12 +148,12 @@ namespace ChaChing.Domain.Billing.Quotes
             _lines.Remove(FindLine(lineId));
         }
 
-        public void UpdateLine(Guid lineId, string description, decimal quantity, Money unitPrice, Discount? discount = null)
+        public void UpdateLine(Guid lineId, string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
             EnsureStatus(QuoteStatus.Draft);
             QuoteLine line = FindLine(lineId);
             EnsureSameCurrency(unitPrice.Currency, nameof(unitPrice));
-            line.Update(description, quantity, unitPrice, discount);
+            line.Update(description, quantity, unitPrice, discount, vatRate);
         }
 
         private QuoteLine FindLine(Guid lineId) => _lines.FirstOrDefault(l => l.Id == lineId) ?? throw new ArgumentException("The line is not in this quote.", nameof(lineId));

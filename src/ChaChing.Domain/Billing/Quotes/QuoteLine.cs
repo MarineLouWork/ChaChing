@@ -1,19 +1,23 @@
 ﻿using ChaChing.Domain.Billing.Discounts;
+using ChaChing.Domain.Billing.Taxes;
 
 namespace ChaChing.Domain.Billing.Quotes
 {
     public class QuoteLine
     {
-        public QuoteLine(string description, decimal quantity, Money unitPrice, Discount? discount = null)
+        /// <param name="vatRate">Null means <see cref="VatRate.Standard"/> (20 %).</param>
+        public QuoteLine(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
             Description = ValidateDescription(description);
             Quantity = ValidateQuantity(quantity);
             UnitPrice = ValidateUnitPrice(unitPrice);
             Discount = discount;
+            VatRate = vatRate ?? VatRate.Standard;
             Id = Guid.NewGuid();
         }
 
-        internal void Update(string description, decimal quantity, Money unitPrice, Discount? discount = null)
+        /// <param name="vatRate">Null means <see cref="VatRate.Standard"/> (20 %), as in the constructor.</param>
+        internal void Update(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
             string validDescription = ValidateDescription(description);
             decimal validQuantity = ValidateQuantity(quantity);
@@ -23,6 +27,7 @@ namespace ChaChing.Domain.Billing.Quotes
             Quantity = validQuantity;
             UnitPrice = validUnitPrice;
             Discount = discount;
+            VatRate = vatRate ?? VatRate.Standard;
         }
 
         public Guid Id { get; }
@@ -42,6 +47,8 @@ namespace ChaChing.Domain.Billing.Quotes
         }
 
         public Discount? Discount { get; private set; }
+
+        public VatRate VatRate { get; private set; }
 
         private static string ValidateDescription(string description)
         {

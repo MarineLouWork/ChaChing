@@ -1,31 +1,48 @@
+using ChaChing.Domain.Common;
+
 namespace ChaChing.Domain.Clients
 {
     public class Client
     {
         public Guid Id { get; }
 
+        /// <summary>The seller this client belongs to (ADR 0012).</summary>
+        public Guid SellerId { get; }
+
         public string Name { get; }
 
         public string Email { get; private set; }
 
-        private Client(Guid id, string name, string email)
+        public Address Address { get; }
+
+        /// <summary>9 digits, for a business client (B2B); null for an individual.</summary>
+        public string? Siren { get; }
+
+        private Client(Guid id, Guid sellerId, string name, string email, Address address, string? siren)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("The name is required.", nameof(name));
 
+            if (sellerId == Guid.Empty)
+                throw new ArgumentException("The sellerId is empty.", nameof(sellerId));
+
             Id = id;
+            SellerId = sellerId;
             Name = name.Trim();
             Email = ValidateEmail(email);
+            Address = address ?? throw new ArgumentNullException(nameof(address));
+            Siren = ValidateSiren(siren);
         }
 
-        public static Client Create(string name, string email) => new Client(Guid.NewGuid(), name, email);
+        public static Client Create(Guid sellerId, string name, string email, Address address, string? siren = null)
+            => new Client(Guid.NewGuid(), sellerId, name, email, address, siren);
 
-        public static Client Rehydrate(Guid id, string name, string email)
+        public static Client Rehydrate(Guid id, Guid sellerId, string name, string email, Address address, string? siren = null)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("The id is empty.", nameof(id));
 
-            return new Client(id, name, email);
+            return new Client(id, sellerId, name, email, address, siren);
         }
 
         public void ChangeEmail(string email)
@@ -42,6 +59,17 @@ namespace ChaChing.Domain.Clients
                 throw new ArgumentException("The email must contain an @.", nameof(email));
 
             return email.Trim();
+        }
+
+        private static string? ValidateSiren(string? siren)
+        {
+            if (siren is null)
+                return null;
+
+            string digits = siren.Replace(" ", string.Empty);
+            if (digits.Length != 9 || !digits.All(char.IsAsciiDigit))
+                throw new ArgumentException("A SIREN has 9 digits.", nameof(siren));
+            return digits;
         }
 
         public override bool Equals(object? obj) => obj is Client other && other.Id == Id;

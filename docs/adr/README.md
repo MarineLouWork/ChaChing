@@ -25,6 +25,8 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0016](0016-quote-create-draft.md) | `Quote.CreateDraft`, no `Rehydrate` yet | Accepted |
 | [0017](0017-quote-update-line-through-root.md) | Lines are edited through the root, with a single `UpdateLine` | Accepted |
 | [0018](0018-quote-lifecycle.md) | Quote lifecycle: guarded transitions, a number kept forever | Accepted |
+| [0019](0019-snapshots-taken-by-mark-as-sent.md) | Snapshots are built from the aggregates and checked by the quote | Accepted |
+| [0020](0020-vat-breakdown-pro-rata.md) | VAT breakdown per rate, the quote discount shared pro rata | Accepted |
 
 The overall map of aggregates is in [`../domain-model.md`](../domain-model.md).
 
