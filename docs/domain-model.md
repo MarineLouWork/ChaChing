@@ -80,7 +80,7 @@ classDiagram
         SellerSnapshot? SellerSnapshot
         ClientSnapshot? ClientSnapshot
         AddLine(...)
-        Send(number, issueDate, validUntil, seller, client)
+        MarkAsSent(number, issueDate, validUntil)
         Money TotalExclTax
         Money TotalVat
         Money TotalInclTax
@@ -155,7 +155,7 @@ classDiagram
 |---|---|---|---|
 | Seller: legal name, address, SIRET, VAT number, VAT regime | `Seller` | `SellerId`, then a **snapshot** when sent | Seller (BG-4) |
 | Client: name, address, SIREN (B2B) | `Client` | `ClientId`, then a **snapshot** when sent | Buyer (BG-7) |
-| Number, issue date | `Quote` | set by `Send()` | BT-1, BT-2 |
+| Number, issue date | `Quote` | set by `MarkAsSent()` | BT-1, BT-2 |
 | Currency | `Quote` | at creation | BT-5 (ISO 4217, as `Currency`) |
 | Lines: description, quantity, unit price excl. tax, VAT rate | `QuoteLine` | owned | invoice line (BG-25) |
 | Totals excl. tax, VAT, incl. tax | `Quote` | **computed**, never stored | document totals (BG-22) |
@@ -166,10 +166,10 @@ classDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Draft
-    Draft --> Sent : Send() - number and snapshots
-    Sent --> Accepted
-    Sent --> Refused
-    Refused --> Draft : reworked
+    Draft --> Sent : MarkAsSent() - number, dates, snapshots
+    Sent --> Accepted : MarkAsAccepted()
+    Sent --> Declined
+    Declined --> Draft : ReturnToDraft() - keeps its number
     Accepted --> [*] : converted into an invoice
 ```
 

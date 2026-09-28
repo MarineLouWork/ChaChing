@@ -8,6 +8,6 @@ namespace ChaChing.Domain.Billing.Quotes
 
         Accepted = 2,
 
-        Refused = 3
+        Declined = 3
     }
 }
