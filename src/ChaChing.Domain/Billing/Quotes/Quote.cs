@@ -37,24 +37,61 @@ namespace ChaChing.Domain.Billing.Quotes
 
         public Discount? Discount { get; }
 
-        // Later:
+        public QuoteNumber? Number { get; private set; }
 
-        // QuoteNumber? Number, DateOnly? IssueDate, DateOnly? ValidUntil
-        // SellerSnapshot? SellerSnapshot, ClientSnapshot? ClientSnapshot
-        // Send(number, issueDate, validUntil, seller, client)
+        public DateOnly? IssueDate { get; private set; }
+
+        public DateOnly? ValidUntil { get; private set; }
+
+        // Later:
+        // SellerSnapshot? SellerSnapshot, ClientSnapshot? ClientSnapshot (taken by Send)
         // Money TotalVat, TotalInclTax
         // Rehydrate(...) only if persistence needs it (ADR 0016)
 
+        #region Lifecycle (ADR 0018) — TODO Marine
+        /// <summary>Draft → Sent. At least one line; validUntil not before issueDate; a quote keeps its number forever.</summary>
+        public void Send(QuoteNumber number, DateOnly issueDate, DateOnly validUntil)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>Sent → Accepted.</summary>
+        public void Accept()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>Sent → Refused.</summary>
+        public void Refuse()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>Refused → Draft, to rework it. Keeps its number.</summary>
+        public void ReturnToDraft()
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
+
         public void AddLine(QuoteLine line)
         {
-            if (line == null)
-                ArgumentNullException.ThrowIfNull(line);
-            if (line.Id == Guid.Empty)
-                throw new ArgumentException($"The line is empty.", nameof(line));
-            if (line.TotalPrice.Currency != Currency)
-                throw new ArgumentException($"Two different currencies can't be added to the same quote", nameof(line));
+            ArgumentNullException.ThrowIfNull(line);
+            EnsureSameCurrency(line.UnitPrice.Currency, nameof(line));
+
             _lines.Add(line);
         }
+
+        public void RemoveLine(Guid lineId) => _lines.Remove(FindLine(lineId));
+
+        public void UpdateLine(Guid lineId, string description, decimal quantity, Money unitPrice, Discount? discount = null)
+        {
+            QuoteLine line = FindLine(lineId);
+            EnsureSameCurrency(unitPrice.Currency, nameof(unitPrice));
+            line.Update(description, quantity, unitPrice, discount);
+        }
+
+        private QuoteLine FindLine(Guid lineId) => _lines.FirstOrDefault(l => l.Id == lineId) ?? throw new ArgumentException("The line is not in this quote.", nameof(lineId));
 
         private static Guid ValidateId(Guid id, string paramName)
         {
@@ -68,6 +105,12 @@ namespace ChaChing.Domain.Billing.Quotes
             if (!Enum.IsDefined(currency))
                 throw new ArgumentException("The currency is not valid.", nameof(currency));
             return currency;
+        }
+
+        private void EnsureSameCurrency(Currency currency, string paramName)
+        {
+            if (currency != Currency)
+                throw new ArgumentException("A quote holds a single currency.", paramName);
         }
 
         private Money CalculateTotalExclTax()

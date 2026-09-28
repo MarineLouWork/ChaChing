@@ -13,6 +13,18 @@ namespace ChaChing.Domain.Billing.Quotes
             Id = Guid.NewGuid();
         }
 
+        internal void Update(string description, decimal quantity, Money unitPrice, Discount? discount = null)
+        {
+            string validDescription = ValidateDescription(description);
+            decimal validQuantity = ValidateQuantity(quantity);
+            Money validUnitPrice = ValidateUnitPrice(unitPrice);
+
+            Description = validDescription;
+            Quantity = validQuantity;
+            UnitPrice = validUnitPrice;
+            Discount = discount;
+        }
+
         public Guid Id { get; }
 
         public string Description { get; private set; }
@@ -29,7 +41,7 @@ namespace ChaChing.Domain.Billing.Quotes
             }
         }
 
-        public Discount? Discount { get; }
+        public Discount? Discount { get; private set; }
 
         private static string ValidateDescription(string description)
         {
@@ -53,6 +65,5 @@ namespace ChaChing.Domain.Billing.Quotes
         }
 
         private Money CalculateTotalPrice() => this.Discount?.Apply(this.UnitPrice.Multiply(this.Quantity)) ?? this.UnitPrice.Multiply(this.Quantity);
-
     }
 }

@@ -23,6 +23,7 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0014](0014-vat-rate-per-line.md) | VAT: a rate per line, the regime on the seller | Accepted |
 | [0015](0015-vocabulary-follows-en-16931.md) | The domain vocabulary follows EN 16931 (except `Client`) | Accepted |
 | [0016](0016-quote-create-draft.md) | `Quote.CreateDraft`, no `Rehydrate` yet | Accepted |
+| [0017](0017-quote-update-line-through-root.md) | Lines are edited through the root, with a single `UpdateLine` | Accepted |
 
 The overall map of aggregates is in [`../domain-model.md`](../domain-model.md).
 
