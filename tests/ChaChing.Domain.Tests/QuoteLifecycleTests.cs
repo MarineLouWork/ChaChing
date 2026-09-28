@@ -70,7 +70,7 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = DraftWithOneLine();
 
-            var action = () => quote.MarkAsSent(null!, issueDate, validUntil); // ! : null is forced on purpose, it is the case under test
+            var action = () => quote.MarkAsSent(null!, issueDate, validUntil);
 
             Assert.Throws<ArgumentNullException>(action);
         }
@@ -131,25 +131,41 @@ namespace ChaChing.Domain.Tests
         [Fact]
         public void MarkAsAccepted_Draft_Throws()
         {
-            Assert.Throws<InvalidOperationException>(() => DraftWithOneLine().MarkAsAccepted());
+            Quote quote = DraftWithOneLine();
+
+            var action = () => quote.MarkAsAccepted();
+
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
         public void MarkAsDeclined_Draft_Throws()
         {
-            Assert.Throws<InvalidOperationException>(() => DraftWithOneLine().MarkAsDeclined());
+            Quote quote = DraftWithOneLine();
+
+            var action = () => quote.MarkAsDeclined();
+
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
         public void MarkAsDeclined_Accepted_Throws()
         {
-            Assert.Throws<InvalidOperationException>(() => AcceptedQuote().MarkAsDeclined());
+            Quote quote = AcceptedQuote();
+
+            var action = () => quote.MarkAsDeclined();
+
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
         public void MarkAsAccepted_Declined_Throws()
         {
-            Assert.Throws<InvalidOperationException>(() => DeclinedQuote().MarkAsAccepted());
+            Quote quote = DeclinedQuote();
+
+            var action = () => quote.MarkAsAccepted();
+
+            Assert.Throws<InvalidOperationException>(action);
         }
         #endregion
 
@@ -168,13 +184,21 @@ namespace ChaChing.Domain.Tests
         [Fact]
         public void ReturnToDraft_Accepted_Throws()
         {
-            Assert.Throws<InvalidOperationException>(() => AcceptedQuote().ReturnToDraft());
+            Quote quote = AcceptedQuote();
+
+            var action = () => quote.ReturnToDraft();
+
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
         public void ReturnToDraft_Sent_Throws()
         {
-            Assert.Throws<InvalidOperationException>(() => SentQuote().ReturnToDraft());
+            Quote quote = SentQuote();
+
+            var action = () => quote.ReturnToDraft();
+
+            Assert.Throws<InvalidOperationException>(action);
         }
 
         [Fact]
@@ -207,7 +231,9 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = SentQuote();
 
-            Assert.Throws<InvalidOperationException>(() => quote.AddLine(Line()));
+            var action = () => quote.AddLine(Line());
+
+            Assert.Throws<InvalidOperationException>(action);
             Assert.Single(quote.Lines);
         }
 
@@ -216,7 +242,11 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = SentQuote();
 
-            Assert.Throws<InvalidOperationException>(() => quote.RemoveLine(quote.Lines[0].Id));
+            Guid lineId = quote.Lines[0].Id;
+
+            var action = () => quote.RemoveLine(lineId);
+
+            Assert.Throws<InvalidOperationException>(action);
             Assert.Single(quote.Lines);
         }
 
