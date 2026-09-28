@@ -1,4 +1,4 @@
-﻿using ChaChing.Domain.Billing;
+using ChaChing.Domain.Billing;
 using ChaChing.Domain.Billing.Discounts;
 using ChaChing.Domain.Billing.Quotes;
 
@@ -6,83 +6,165 @@ namespace ChaChing.Domain.Tests
 {
     public class QuoteTests
     {
-        static readonly Money fiveHundredEuros = new Money(500m, Currency.EUR);
+        static readonly Guid clientId = Guid.NewGuid();
+        static readonly Guid sellerId = Guid.NewGuid();
 
-        #region QuoteLine Tests
+        static Quote NewEuroQuote() => Quote.CreateDraft(sellerId, clientId, Currency.EUR);
+
+        static QuoteLine Line(decimal quantity, decimal unitPrice, Currency currency = Currency.EUR, Discount? discount = null)
+            => new("valid description", quantity, new Money(unitPrice, currency), discount);
+
+        #region Creation
         [Fact]
-        public void QuoteLine_Allocated_IsValid()
+        public void CreateDraft_WithValidData_IsAnEmptyDraft()
         {
-            QuoteLine ValidQuoteLine = new("refound of the branding of Stark's family", 2m, fiveHundredEuros);
+            Quote quote = Quote.CreateDraft(sellerId, clientId, Currency.EUR);
 
-            Assert.NotEqual(Guid.Empty, ValidQuoteLine.Id);
-            Assert.Equal("refound of the branding of Stark's family", ValidQuoteLine.Description);
-            Assert.Equal(2m, ValidQuoteLine.Quantity);
-            Assert.Equal(new Money(500m, Currency.EUR), ValidQuoteLine.UnitPrice);
+            Assert.NotEqual(Guid.Empty, quote.Id);
+            Assert.Equal(sellerId, quote.SellerId);
+            Assert.Equal(clientId, quote.ClientId);
+            Assert.Equal(Currency.EUR, quote.Currency);
+            Assert.Equal(QuoteStatus.Draft, quote.Status);
+            Assert.Empty(quote.Lines);
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("  ")]
-        public void QuoteLine_WithBlankOrEmptyDescription_Throws(string? description)
+        [Fact]
+        public void CreateDraft_WithEmptySellerId_Throws()
         {
-            var action = () => new QuoteLine(description!, 2m, fiveHundredEuros);
+            var action = () => Quote.CreateDraft(Guid.Empty, clientId, Currency.EUR);
+
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("sellerId", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateDraft_WithEmptyClientId_Throws()
+        {
+            var action = () => Quote.CreateDraft(sellerId, Guid.Empty, Currency.EUR);
+
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("clientId", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateDraft_WithUndefinedCurrency_Throws()
+        {
+            var action = () => Quote.CreateDraft(sellerId, clientId, (Currency)999);
 
             Assert.Throws<ArgumentException>(action);
         }
+        #endregion
 
-        [Theory]
-        [InlineData(0)]
-        [InlineData(-0.01)]
-        public void QuoteLine_WithInvalidQuantity_Throws(decimal quantity)
+        #region AddLine
+        [Fact]
+        public void AddLine_OnDraft_LineIsInLines()
         {
-            var action = () => new QuoteLine("valid description", quantity, fiveHundredEuros);
+            Quote quote = NewEuroQuote();
+            QuoteLine line = Line(2m, 500m);
+
+            quote.AddLine(line);
+
+            Assert.Single(quote.Lines);
+            Assert.Same(line, quote.Lines[0]);
+        }
+
+        [Fact]
+        public void AddLine_Twice_KeepsTheOrder()
+        {
+            Quote quote = NewEuroQuote();
+            QuoteLine first = Line(1m, 100m);
+            QuoteLine second = Line(1m, 200m);
+
+            quote.AddLine(first);
+            quote.AddLine(second);
+
+            Assert.Equal(new[] { first, second }, quote.Lines);
+        }
+
+        [Fact]
+        public void AddLine_WithDifferentCurrency_Throws()
+        {
+            Quote quote = NewEuroQuote();
+
+            var action = () => quote.AddLine(Line(2m, 500m, Currency.GBP));
 
             Assert.Throws<ArgumentException>(action);
+            Assert.Empty(quote.Lines);
         }
 
         [Fact]
-        public void QuoteLine_WithSpecificQuantity_IsValid()
+        public void AddLine_WithNullLine_Throws()
         {
-            QuoteLine ValidQuoteLine = new("valid description", 0.01m, fiveHundredEuros);
+            Quote quote = NewEuroQuote();
 
-            Assert.Equal(0.01m, ValidQuoteLine.Quantity);
+            var action = () => quote.AddLine(null!); // ! : null is forced on purpose, it is the case under test
+
+            Assert.Throws<ArgumentNullException>(action);
+        }
+        #endregion
+
+        #region Total
+        [Fact]
+        public void TotalExclTax_WithoutLines_IsZeroInQuoteCurrency()
+        {
+            Quote quote = NewEuroQuote();
+
+            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalExclTax);
         }
 
         [Fact]
-        public void QuoteLine_WithNoPrice_IsValid()
+        public void TotalExclTax_WithSeveralLines_IsTheSumOfTheLines()
         {
-            QuoteLine ValidQuoteLine = new("valid description", 1m, new Money(0m, Currency.EUR));
+            Quote quote = NewEuroQuote();
+            quote.AddLine(Line(2m, 134.5m));
+            quote.AddLine(Line(3m, 10m));
 
-            Assert.Equal(new Money(0m, Currency.EUR), ValidQuoteLine.UnitPrice);
+            Assert.Equal(new Money(299m, Currency.EUR), quote.TotalExclTax);
         }
 
         [Fact]
-        public void QuoteLine_WithNegativeUnitPrice_Throws()
+        public void TotalExclTax_WithDiscountedLine_UsesTheDiscountedLineTotal()
         {
-            var action = () => new QuoteLine("valid description", 2m, new Money(-0.01m, Currency.EUR));
+            Quote quote = NewEuroQuote();
+            quote.AddLine(Line(3m, 500m, discount: new PercentageDiscount(10m)));
+            quote.AddLine(Line(1m, 50m));
 
-            Assert.Throws<ArgumentException>(action);
-        }
-
-        [Theory]
-        [InlineData(2, 134.5, 269)]
-        [InlineData(18, 59.62, 1073.16)]
-        public void QuoteLine_Allocated_TotalPriceIsValid(decimal quantity, decimal unitPriceAmount, decimal result)
-        {
-            QuoteLine quoteLine = new("valid description", quantity, new Money(unitPriceAmount, Currency.EUR));
-
-            Assert.Equal(result, quoteLine.TotalPrice.Amount);
+            Assert.Equal(new Money(1400m, Currency.EUR), quote.TotalExclTax);
         }
 
         [Fact]
-        public void QuoteLine_AllocatedWithDiscount_TotalPriceIsValid()
+        public void TotalExclTax_AfterAddLine_IsRecomputed()
         {
-            Discount tenPercentDiscount = new PercentageDiscount(10m);
+            Quote quote = NewEuroQuote();
+            quote.AddLine(Line(1m, 100m));
+            Money before = quote.TotalExclTax;
 
-            QuoteLine quoteLine = new("valid description", 3, fiveHundredEuros, tenPercentDiscount);
+            quote.AddLine(Line(1m, 20m));
 
-            Assert.Equal(1350m, quoteLine.TotalPrice.Amount);
+            Assert.Equal(new Money(100m, Currency.EUR), before);
+            Assert.Equal(new Money(120m, Currency.EUR), quote.TotalExclTax);
+        }
+
+        [Fact]
+        public void TotalExclTax_WithFixedDiscount_IsTheSumOfTheLines()
+        {
+            FixedAmountDiscount fixedDiscount = new(new Money(33m, Currency.EUR));
+            Quote quote = Quote.CreateDraft(sellerId, clientId, Currency.EUR, fixedDiscount);
+            quote.AddLine(Line(2m, 134.5m));
+            quote.AddLine(Line(3m, 10m));
+
+            Assert.Equal(new Money(266m, Currency.EUR), quote.TotalExclTax);
+        }
+
+        [Fact]
+        public void TotalExclTax_WithPercentDiscount_IsTheSumOfTheLines()
+        {
+            PercentageDiscount percentDiscount = new PercentageDiscount(10m);
+            Quote quote = Quote.CreateDraft(sellerId, clientId, Currency.EUR, percentDiscount);
+            quote.AddLine(Line(2m, 134.5m));
+            quote.AddLine(Line(3m, 10m));
+
+            Assert.Equal(new Money(269.1m, Currency.EUR), quote.TotalExclTax);
         }
         #endregion
     }

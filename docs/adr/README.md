@@ -17,5 +17,13 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0008](0008-projects-created-when-needed.md) | One solution, projects created only when a layer needs them | Accepted |
 | [0009](0009-discount-business-rules.md) | Discounts: zero accepted, rates from 0 to 100 % | Accepted |
 | [0010](0010-quote-aggregate.md) | `Quote` is an aggregate, `QuoteLine` a local entity | Accepted |
+| [0011](0011-client-id-as-guid.md) | `ClientId` is a plain `Guid`, its existence is checked by the application layer | Accepted |
+| [0012](0012-seller-and-snapshots-on-send.md) | Multi-seller, references while drafting, snapshots when sent | Accepted |
+| [0013](0013-gapless-numbering-on-send.md) | Gapless numbering, assigned when sent | Accepted |
+| [0014](0014-vat-rate-per-line.md) | VAT: a rate per line, the regime on the seller | Accepted |
+| [0015](0015-vocabulary-follows-en-16931.md) | The domain vocabulary follows EN 16931 (except `Client`) | Accepted |
+| [0016](0016-quote-create-draft.md) | `Quote.CreateDraft`, no `Rehydrate` yet | Accepted |
+
+The overall map of aggregates is in [`../domain-model.md`](../domain-model.md).
 
 ADRs 0001 to 0007 were written in French in the `Katas` repository, then imported and translated on 24/09/2026. The code names were translated at the same time (`Remise` → `Discount`, `Devise` → `Currency`, `Creer` → `Create`…).
