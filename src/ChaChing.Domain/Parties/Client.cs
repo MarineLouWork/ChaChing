@@ -1,6 +1,6 @@
 using ChaChing.Domain.Common;
 
-namespace ChaChing.Domain.Clients
+namespace ChaChing.Domain.Parties
 {
     public class Client
     {

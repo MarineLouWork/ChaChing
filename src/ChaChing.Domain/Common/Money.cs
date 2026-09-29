@@ -1,4 +1,4 @@
-namespace ChaChing.Domain.Billing
+namespace ChaChing.Domain.Common
 {
     public record Money(decimal Amount, Currency Currency)
     {

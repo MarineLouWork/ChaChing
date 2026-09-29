@@ -1,6 +1,5 @@
-using ChaChing.Domain.Billing.Taxes;
 using ChaChing.Domain.Common;
-using ChaChing.Domain.Sellers;
+using ChaChing.Domain.Parties;
 
 namespace ChaChing.Domain.Tests
 {

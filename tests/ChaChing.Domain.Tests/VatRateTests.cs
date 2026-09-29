@@ -1,5 +1,5 @@
 using ChaChing.Domain.Billing;
-using ChaChing.Domain.Billing.Taxes;
+using ChaChing.Domain.Common;
 
 namespace ChaChing.Domain.Tests
 {

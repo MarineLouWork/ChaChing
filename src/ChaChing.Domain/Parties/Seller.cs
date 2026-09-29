@@ -1,7 +1,6 @@
-using ChaChing.Domain.Billing.Taxes;
 using ChaChing.Domain.Common;
 
-namespace ChaChing.Domain.Sellers
+namespace ChaChing.Domain.Parties
 {
     public class Seller
     {

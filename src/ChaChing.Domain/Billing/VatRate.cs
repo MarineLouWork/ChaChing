@@ -1,4 +1,6 @@
-namespace ChaChing.Domain.Billing.Taxes
+using ChaChing.Domain.Common;
+
+namespace ChaChing.Domain.Billing
 {
     /// <summary>
     /// The VAT rate of a line (ADR 0014). Either a percentage, or <see cref="Exempt"/> (EN 16931 category "E", 0 %).

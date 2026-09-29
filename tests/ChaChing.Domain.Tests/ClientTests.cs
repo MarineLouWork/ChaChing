@@ -1,5 +1,5 @@
-using ChaChing.Domain.Clients;
 using ChaChing.Domain.Common;
+using ChaChing.Domain.Parties;
 
 namespace ChaChing.Domain.Tests
 {

@@ -1,9 +1,7 @@
 using ChaChing.Domain.Billing;
-using ChaChing.Domain.Billing.Parties;
 using ChaChing.Domain.Billing.Quotes;
-using ChaChing.Domain.Billing.Taxes;
-using ChaChing.Domain.Clients;
-using ChaChing.Domain.Sellers;
+using ChaChing.Domain.Common;
+using ChaChing.Domain.Parties;
 
 namespace ChaChing.Domain.Tests
 {
@@ -17,7 +15,7 @@ namespace ChaChing.Domain.Tests
         static readonly SellerSnapshot sellerSnapshot = SellerSnapshot.From(seller);
         static readonly ClientSnapshot clientSnapshot = ClientSnapshot.From(client);
 
-        static QuoteLine Line() => new("valid description", 1m, new Money(100m, Currency.EUR));
+        static BillingLine Line() => new("valid description", 1m, new Money(100m, Currency.EUR));
 
         static Quote DraftWithOneLine()
         {
@@ -262,7 +260,7 @@ namespace ChaChing.Domain.Tests
         public void UpdateLine_OnAcceptedQuote_ThrowsAndLeavesTheLineUnchanged()
         {
             Quote quote = AcceptedQuote();
-            QuoteLine line = quote.Lines[0];
+            BillingLine line = quote.Lines[0];
 
             var action = () => quote.UpdateLine(line.Id, "new description", 5m, new Money(1m, Currency.EUR));
 
@@ -369,7 +367,7 @@ namespace ChaChing.Domain.Tests
         {
             Seller exemptSeller = TestData.Seller(VatRegime.Exempt);
             Quote quote = Quote.CreateDraft(exemptSeller.Id, client.Id, Currency.EUR);
-            quote.AddLine(new QuoteLine("valid description", 1m, new Money(100m, Currency.EUR), vatRate: VatRate.Exempt));
+            quote.AddLine(new BillingLine("valid description", 1m, new Money(100m, Currency.EUR), vatRate: VatRate.Exempt));
 
             quote.MarkAsSent(number, issueDate, validUntil, SellerSnapshot.From(exemptSeller), clientSnapshot);
 

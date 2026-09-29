@@ -1,4 +1,4 @@
-namespace ChaChing.Domain.Billing.Taxes
+namespace ChaChing.Domain.Parties
 {
     public enum VatRegime
     {

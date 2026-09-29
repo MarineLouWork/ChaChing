@@ -1,6 +1,6 @@
 using ChaChing.Domain.Billing;
-using ChaChing.Domain.Billing.Discounts;
 using ChaChing.Domain.Billing.Quotes;
+using ChaChing.Domain.Common;
 
 namespace ChaChing.Domain.Tests
 {
@@ -11,7 +11,7 @@ namespace ChaChing.Domain.Tests
 
         static Quote NewEuroQuote() => Quote.CreateDraft(sellerId, clientId, Currency.EUR);
 
-        static QuoteLine Line(decimal quantity, decimal unitPrice, Currency currency = Currency.EUR, Discount? discount = null)
+        static BillingLine Line(decimal quantity, decimal unitPrice, Currency currency = Currency.EUR, Discount? discount = null)
             => new("valid description", quantity, new Money(unitPrice, currency), discount);
 
         #region Creation
@@ -60,7 +60,7 @@ namespace ChaChing.Domain.Tests
         public void AddLine_OnDraft_LineIsInLines()
         {
             Quote quote = NewEuroQuote();
-            QuoteLine line = Line(2m, 500m);
+            BillingLine line = Line(2m, 500m);
 
             quote.AddLine(line);
 
@@ -72,8 +72,8 @@ namespace ChaChing.Domain.Tests
         public void AddLine_Twice_KeepsTheOrder()
         {
             Quote quote = NewEuroQuote();
-            QuoteLine first = Line(1m, 100m);
-            QuoteLine second = Line(1m, 200m);
+            BillingLine first = Line(1m, 100m);
+            BillingLine second = Line(1m, 200m);
 
             quote.AddLine(first);
             quote.AddLine(second);
@@ -109,7 +109,7 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = NewEuroQuote();
 
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(2m, 134.5m));
             quote.AddLine(Line(3m, 10m));
 
-            Assert.Equal(new Money(299m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(299m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(3m, 500m, discount: new PercentageDiscount(10m)));
             quote.AddLine(Line(1m, 50m));
 
-            Assert.Equal(new Money(1400m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(1400m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -137,12 +137,12 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = NewEuroQuote();
             quote.AddLine(Line(1m, 100m));
-            Money before = quote.TotalWithoutVat;
+            Money before = quote.Totals.TotalWithoutVat;
 
             quote.AddLine(Line(1m, 20m));
 
             Assert.Equal(new Money(100m, Currency.EUR), before);
-            Assert.Equal(new Money(120m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(120m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(2m, 134.5m));
             quote.AddLine(Line(3m, 10m));
 
-            Assert.Equal(new Money(266m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(266m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(2m, 134.5m));
             quote.AddLine(Line(3m, 10m));
 
-            Assert.Equal(new Money(269.1m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(269.1m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -174,7 +174,7 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(3m, 500m, discount: new PercentageDiscount(10m)));
             quote.AddLine(Line(1m, 50m));
 
-            Assert.Equal(new Money(1260m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(1260m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -186,7 +186,7 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(3m, 500m, discount: new PercentageDiscount(10m)));
             quote.AddLine(Line(1m, 50m));
 
-            Assert.Equal(new Money(0m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(0m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
         #endregion
 
@@ -195,15 +195,15 @@ namespace ChaChing.Domain.Tests
         public void RemoveLine_ExistingLine_OnlyThisLineIsRemoved()
         {
             Quote quote = NewEuroQuote();
-            QuoteLine kept = Line(1m, 100m);
-            QuoteLine removed = Line(1m, 200m);
+            BillingLine kept = Line(1m, 100m);
+            BillingLine removed = Line(1m, 200m);
             quote.AddLine(kept);
             quote.AddLine(removed);
 
             quote.RemoveLine(removed.Id);
 
             Assert.Equal(new[] { kept }, quote.Lines);
-            Assert.Equal(new Money(100m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(100m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -225,13 +225,13 @@ namespace ChaChing.Domain.Tests
         public void UpdateLine_WithValidData_UpdatesTheSameLine()
         {
             Quote quote = NewEuroQuote();
-            QuoteLine line = Line(1m, 100m);
+            BillingLine line = Line(1m, 100m);
             quote.AddLine(line);
             Discount discount = new PercentageDiscount(10m);
 
             quote.UpdateLine(line.Id, "new description", 3m, new Money(50m, Currency.EUR), discount);
 
-            QuoteLine updated = Assert.Single(quote.Lines);
+            BillingLine updated = Assert.Single(quote.Lines);
             Assert.Equal(line.Id, updated.Id);
             Assert.Equal("new description", updated.Description);
             Assert.Equal(3m, updated.Quantity);
@@ -243,12 +243,12 @@ namespace ChaChing.Domain.Tests
         public void UpdateLine_WithValidData_TotalIsRecomputed()
         {
             Quote quote = NewEuroQuote();
-            QuoteLine line = Line(1m, 100m);
+            BillingLine line = Line(1m, 100m);
             quote.AddLine(line);
 
             quote.UpdateLine(line.Id, "valid description", 3m, new Money(50m, Currency.EUR));
 
-            Assert.Equal(new Money(150m, Currency.EUR), quote.TotalWithoutVat);
+            Assert.Equal(new Money(150m, Currency.EUR), quote.Totals.TotalWithoutVat);
         }
 
         [Fact]
@@ -267,7 +267,7 @@ namespace ChaChing.Domain.Tests
         public void UpdateLine_WithInvalidQuantity_ThrowsAndLeavesTheLineUnchanged()
         {
             Quote quote = NewEuroQuote();
-            QuoteLine line = Line(1m, 100m);
+            BillingLine line = Line(1m, 100m);
             quote.AddLine(line);
 
             // the description is valid and checked first: it must not be applied alone
@@ -283,7 +283,7 @@ namespace ChaChing.Domain.Tests
         public void UpdateLine_WithDifferentCurrency_ThrowsAndLeavesTheLineUnchanged()
         {
             Quote quote = NewEuroQuote();
-            QuoteLine line = Line(1m, 100m);
+            BillingLine line = Line(1m, 100m);
             quote.AddLine(line);
 
             var action = () => quote.UpdateLine(line.Id, "new description", 2m, new Money(50m, Currency.GBP));

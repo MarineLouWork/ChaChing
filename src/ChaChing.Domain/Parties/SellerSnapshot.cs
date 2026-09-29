@@ -1,8 +1,6 @@
-using ChaChing.Domain.Billing.Taxes;
 using ChaChing.Domain.Common;
-using ChaChing.Domain.Sellers;
 
-namespace ChaChing.Domain.Billing.Parties
+namespace ChaChing.Domain.Parties
 {
     /// <summary>
     /// The seller's details frozen on the day a document is sent (ADR 0012).

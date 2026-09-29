@@ -1,6 +1,5 @@
-using ChaChing.Domain.Billing.Discounts;
-using ChaChing.Domain.Billing.Parties;
-using ChaChing.Domain.Billing.Taxes;
+using ChaChing.Domain.Common;
+using ChaChing.Domain.Parties;
 
 namespace ChaChing.Domain.Billing.Quotes
 {
@@ -42,39 +41,15 @@ namespace ChaChing.Domain.Billing.Quotes
 
         public ClientSnapshot? ClientSnapshot { get; private set; }
 
-        private readonly List<QuoteLine> _lines = new();
-        public IReadOnlyList<QuoteLine> Lines => _lines;
+        private readonly List<BillingLine> _lines = new();
+        public IReadOnlyList<BillingLine> Lines => _lines;
 
         public Currency Currency { get; }
 
         public Discount? Discount { get; }
 
-        public IReadOnlyList<VatSubtotal> VatBreakdown
-        {
-            get => CalculateVatBreakdown();
-        }
-
-        public Money TotalVatAmount
-        {
-            get => CalculateTotalVatAmount();
-        }
-
-        public Money TotalWithVat
-        {
-            get => TotalWithoutVat + TotalVatAmount;
-        }
-
-        /// <summary>After the quote discount (EN 16931 BT-109): what the VAT is computed on. See <see cref="TotalNet"/> for before.</summary>
-        public Money TotalWithoutVat
-        {
-            get => this.Discount?.Apply(this.TotalNet) ?? this.TotalNet;
-        }
-
-        /// <summary>The sum of the line totals, BEFORE the quote discount (EN 16931 BT-106, ADR 0022).</summary>
-        public Money TotalNet
-        {
-            get => CalculateTotalNet();
-        }
+        /// <summary>Lines total, discount on the total, VAT breakdown: computed on read, never stored.</summary>
+        public BillingTotals Totals => BillingTotals.Compute(_lines, Discount, Currency);
         #endregion
 
         #region Lifecycle (ADR 0018, 0019)
@@ -138,7 +113,7 @@ namespace ChaChing.Domain.Billing.Quotes
         #endregion
 
         #region Lines (draft only)
-        public void AddLine(QuoteLine line)
+        public void AddLine(BillingLine line)
         {
             EnsureStatus(QuoteStatus.Draft);
             ArgumentNullException.ThrowIfNull(line);
@@ -156,12 +131,12 @@ namespace ChaChing.Domain.Billing.Quotes
         public void UpdateLine(Guid lineId, string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
             EnsureStatus(QuoteStatus.Draft);
-            QuoteLine line = FindLine(lineId);
+            BillingLine line = FindLine(lineId);
             EnsureSameCurrency(unitPrice.Currency, nameof(unitPrice));
             line.Update(description, quantity, unitPrice, discount, vatRate);
         }
 
-        private QuoteLine FindLine(Guid lineId) => _lines.FirstOrDefault(l => l.Id == lineId) ?? throw new ArgumentException("The line is not in this quote.", nameof(lineId));
+        private BillingLine FindLine(Guid lineId) => _lines.FirstOrDefault(l => l.Id == lineId) ?? throw new ArgumentException("The line is not in this quote.", nameof(lineId));
 
         #endregion
 
@@ -184,65 +159,6 @@ namespace ChaChing.Domain.Billing.Quotes
         {
             if (currency != Currency)
                 throw new ArgumentException("A quote holds a single currency.", paramName);
-        }
-        #endregion
-
-        #region Calculates
-        private Money CalculateTotalNet()
-        {
-            Money totalNet = Money.Zero(Currency);
-
-            foreach (QuoteLine line in Lines)
-                totalNet += line.TotalPrice;
-
-            return totalNet;
-        }
-
-        private Money CalculateTotalVatAmount()
-        {
-            Money totalVatAmount = Money.Zero(Currency);
-
-            foreach (VatSubtotal detail in VatBreakdown)
-                totalVatAmount += detail.VatAmount;
-
-            return totalVatAmount;
-        }
-
-        private IReadOnlyList<VatSubtotal> CalculateVatBreakdown()
-        {
-            List<VatSubtotal> list = new List<VatSubtotal>();
-
-            // If there is no line, nothing to compute
-            if (Lines.Count == 0)
-                return list;
-
-            // If there is a discount on the quote, we compute the ratio discount per product before applying VAT
-            decimal ratio = TotalNet.Amount == 0 ? 1m : TotalWithoutVat.Amount / TotalNet.Amount;
-
-            // We group lines by VAT rate
-            var linesByVatRate = Lines.GroupBy(l => l.VatRate).ToList();
-            Money alreadyDistributed = Money.Zero(Currency);
-
-            for (int i = 0; i < linesByVatRate.Count; i++)
-            {
-                var group = linesByVatRate[i];
-
-                // We sum up the total prices of every lines
-                Money groupTotal = Money.Zero(Currency);
-                foreach (QuoteLine line in group)
-                    groupTotal += line.TotalPrice;
-
-                // The last group takes the rest, so the bases always add up to TotalWithoutVat
-                bool isLast = i == linesByVatRate.Count - 1;
-                Money taxableAmount = isLast ? TotalWithoutVat - alreadyDistributed : groupTotal * ratio;
-
-                alreadyDistributed += taxableAmount;
-
-                Money vatAmount = group.Key.VatOn(taxableAmount);
-                list.Add(new VatSubtotal(group.Key, taxableAmount, vatAmount));
-            }
-
-            return list;
         }
         #endregion
     }

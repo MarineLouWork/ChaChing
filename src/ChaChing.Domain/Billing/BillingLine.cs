@@ -1,12 +1,11 @@
-﻿using ChaChing.Domain.Billing.Discounts;
-using ChaChing.Domain.Billing.Taxes;
+using ChaChing.Domain.Common;
 
-namespace ChaChing.Domain.Billing.Quotes
+namespace ChaChing.Domain.Billing
 {
-    public class QuoteLine
+    public class BillingLine
     {
         /// <param name="vatRate">Null means <see cref="VatRate.Standard"/> (20 %).</param>
-        public QuoteLine(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
+        public BillingLine(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
             Description = ValidateDescription(description);
             Quantity = ValidateQuantity(quantity);

@@ -30,6 +30,8 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0021](0021-totals-named-after-en-16931.md) | The document totals take their EN 16931 names | Accepted |
 | [0022](0022-total-net-before-quote-discount.md) | `TotalNet`: the sum of the lines, before the quote discount | Accepted |
 | [0023](0023-zero-total-keeps-vat-breakdown.md) | A zero total keeps its VAT breakdown | Accepted |
+| [0024](0024-shared-billing-line-and-totals.md) | Lines and totals shared by quote and invoice | Accepted |
+| [0025](0025-folders-by-who-uses-them.md) | Domain folders grouped by who uses the types | Accepted |
 
 The overall map of aggregates is in [`../domain-model.md`](../domain-model.md).
 

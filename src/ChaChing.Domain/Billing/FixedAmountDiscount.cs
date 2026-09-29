@@ -1,4 +1,6 @@
-namespace ChaChing.Domain.Billing.Discounts
+using ChaChing.Domain.Common;
+
+namespace ChaChing.Domain.Billing
 {
     public class FixedAmountDiscount : Discount
     {

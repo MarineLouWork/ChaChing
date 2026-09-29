@@ -1,7 +1,6 @@
-using ChaChing.Domain.Clients;
 using ChaChing.Domain.Common;
 
-namespace ChaChing.Domain.Billing.Parties
+namespace ChaChing.Domain.Parties
 {
     /// <summary>
     /// The client's details frozen on the day a document is sent (ADR 0012).

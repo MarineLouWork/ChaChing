@@ -1,7 +1,6 @@
 using ChaChing.Domain.Billing;
-using ChaChing.Domain.Billing.Discounts;
 using ChaChing.Domain.Billing.Quotes;
-using ChaChing.Domain.Billing.Taxes;
+using ChaChing.Domain.Common;
 
 namespace ChaChing.Domain.Tests
 {
@@ -16,10 +15,10 @@ namespace ChaChing.Domain.Tests
 
         static Quote Draft(Discount? discount = null) => Quote.CreateDraft(Guid.NewGuid(), Guid.NewGuid(), Currency.EUR, discount);
 
-        static QuoteLine Line(decimal amount, VatRate vatRate, Discount? discount = null)
+        static BillingLine Line(decimal amount, VatRate vatRate, Discount? discount = null)
             => new("valid description", 1m, Euros(amount), discount, vatRate);
 
-        static VatSubtotal SubtotalOf(Quote quote, VatRate rate) => Assert.Single(quote.VatBreakdown, subtotal => subtotal.Rate == rate);
+        static VatSubtotal SubtotalOf(Quote quote, VatRate rate) => Assert.Single(quote.Totals.VatBreakdown, subtotal => subtotal.Rate == rate);
 
         #region Without discount
         [Fact]
@@ -27,9 +26,9 @@ namespace ChaChing.Domain.Tests
         {
             Quote quote = Draft();
 
-            Assert.Empty(quote.VatBreakdown);
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalVatAmount);
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalWithVat);
+            Assert.Empty(quote.Totals.VatBreakdown);
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalVatAmount);
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalWithVat);
         }
 
         [Fact]
@@ -39,11 +38,11 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(100m, twenty));
             quote.AddLine(Line(50m, twenty));
 
-            VatSubtotal subtotal = Assert.Single(quote.VatBreakdown);
+            VatSubtotal subtotal = Assert.Single(quote.Totals.VatBreakdown);
 
             Assert.Equal(new VatSubtotal(twenty, Euros(150m), Euros(30m)), subtotal);
-            Assert.Equal(Euros(30m), quote.TotalVatAmount);
-            Assert.Equal(Euros(180m), quote.TotalWithVat);
+            Assert.Equal(Euros(30m), quote.Totals.TotalVatAmount);
+            Assert.Equal(Euros(180m), quote.Totals.TotalWithVat);
         }
 
         [Fact]
@@ -53,11 +52,11 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(100m, twenty));
             quote.AddLine(Line(200m, fivePointFive));
 
-            Assert.Equal(2, quote.VatBreakdown.Count);
+            Assert.Equal(2, quote.Totals.VatBreakdown.Count);
             Assert.Equal(new VatSubtotal(twenty, Euros(100m), Euros(20m)), SubtotalOf(quote, twenty));
             Assert.Equal(new VatSubtotal(fivePointFive, Euros(200m), Euros(11m)), SubtotalOf(quote, fivePointFive));
-            Assert.Equal(Euros(31m), quote.TotalVatAmount);
-            Assert.Equal(Euros(331m), quote.TotalWithVat);
+            Assert.Equal(Euros(31m), quote.Totals.TotalVatAmount);
+            Assert.Equal(Euros(331m), quote.Totals.TotalWithVat);
         }
 
         [Fact]
@@ -66,18 +65,18 @@ namespace ChaChing.Domain.Tests
             Quote quote = Draft();
             quote.AddLine(Line(300m, VatRate.Exempt));
 
-            Assert.Equal(new VatSubtotal(VatRate.Exempt, Euros(300m), Euros(0m)), Assert.Single(quote.VatBreakdown));
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalVatAmount);
-            Assert.Equal(Euros(300m), quote.TotalWithVat);
+            Assert.Equal(new VatSubtotal(VatRate.Exempt, Euros(300m), Euros(0m)), Assert.Single(quote.Totals.VatBreakdown));
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalVatAmount);
+            Assert.Equal(Euros(300m), quote.Totals.TotalWithVat);
         }
 
         [Fact]
         public void LineDiscount_VatOnTheDiscountedLine()
         {
             Quote quote = Draft();
-            quote.AddLine(new QuoteLine("valid description", 3m, Euros(500m), new PercentageDiscount(10m), twenty));   // 1350, not 1500
+            quote.AddLine(new BillingLine("valid description", 3m, Euros(500m), new PercentageDiscount(10m), twenty));   // 1350, not 1500
 
-            Assert.Equal(new VatSubtotal(twenty, Euros(1350m), Euros(270m)), Assert.Single(quote.VatBreakdown));
+            Assert.Equal(new VatSubtotal(twenty, Euros(1350m), Euros(270m)), Assert.Single(quote.Totals.VatBreakdown));
         }
         #endregion
 
@@ -91,8 +90,8 @@ namespace ChaChing.Domain.Tests
 
             Assert.Equal(new VatSubtotal(twenty, Euros(90m), Euros(18m)), SubtotalOf(quote, twenty));
             Assert.Equal(new VatSubtotal(fivePointFive, Euros(180m), Euros(9.9m)), SubtotalOf(quote, fivePointFive));
-            Assert.Equal(Euros(27.9m), quote.TotalVatAmount);
-            Assert.Equal(Euros(297.9m), quote.TotalWithVat);
+            Assert.Equal(Euros(27.9m), quote.Totals.TotalVatAmount);
+            Assert.Equal(Euros(297.9m), quote.Totals.TotalWithVat);
         }
 
         [Fact]
@@ -116,10 +115,10 @@ namespace ChaChing.Domain.Tests
             quote.AddLine(Line(10m, fivePointFive));
             quote.AddLine(Line(10m, ten));
 
-            Money sumOfBases = quote.VatBreakdown.Aggregate(Money.Zero(Currency.EUR), (sum, subtotal) => sum + subtotal.TaxableAmount);
+            Money sumOfBases = quote.Totals.VatBreakdown.Aggregate(Money.Zero(Currency.EUR), (sum, subtotal) => sum + subtotal.TaxableAmount);
 
-            Assert.Equal(Euros(20m), quote.TotalWithoutVat);
-            Assert.Equal(quote.TotalWithoutVat, sumOfBases);
+            Assert.Equal(Euros(20m), quote.Totals.TotalWithoutVat);
+            Assert.Equal(quote.Totals.TotalWithoutVat, sumOfBases);
         }
 
         [Fact]
@@ -128,8 +127,8 @@ namespace ChaChing.Domain.Tests
             Quote quote = Draft(new FixedAmountDiscount(Euros(1000m)));
             quote.AddLine(Line(100m, twenty));
 
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalVatAmount);
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalWithVat);
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalVatAmount);
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalWithVat);
         }
 
         [Fact]
@@ -138,9 +137,9 @@ namespace ChaChing.Domain.Tests
             Quote quote = Draft(new PercentageDiscount(10m));
             quote.AddLine(Line(0m, twenty));
 
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalVatAmount);
-            Assert.Equal(Money.Zero(Currency.EUR), quote.TotalWithVat);
-            Assert.Single(quote.VatBreakdown);
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalVatAmount);
+            Assert.Equal(Money.Zero(Currency.EUR), quote.Totals.TotalWithVat);
+            Assert.Single(quote.Totals.VatBreakdown);
         }
         #endregion
     }

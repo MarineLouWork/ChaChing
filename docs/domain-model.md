@@ -21,7 +21,7 @@ classDiagram
     class Quote {
         <<aggregate root>>
     }
-    class QuoteLine {
+    class BillingLine {
         <<entity>>
     }
     class Invoice {
@@ -31,7 +31,7 @@ classDiagram
     Seller "1" <.. "*" Client : SellerId
     Seller "1" <.. "*" Quote : SellerId
     Client "1" <.. "*" Quote : ClientId
-    Quote "1" *-- "*" QuoteLine : owns
+    Quote "1" *-- "*" BillingLine : owns
     Quote "1" <.. "0..1" Invoice : QuoteId
 ```
 
@@ -72,7 +72,7 @@ classDiagram
         Guid ClientId
         Currency Currency
         QuoteStatus Status
-        IReadOnlyList~QuoteLine~ Lines
+        IReadOnlyList~BillingLine~ Lines
         Discount? Discount
         QuoteNumber? Number
         DateOnly? IssueDate
@@ -81,13 +81,10 @@ classDiagram
         ClientSnapshot? ClientSnapshot
         AddLine(...)
         MarkAsSent(number, issueDate, validUntil)
-        Money TotalNet
-        Money TotalWithoutVat
-        Money TotalVatAmount
-        Money TotalWithVat
+        BillingTotals Totals
     }
 
-    class QuoteLine {
+    class BillingLine {
         <<entity>>
         Guid Id
         string Description
@@ -118,6 +115,14 @@ classDiagram
         decimal Percent
         bool IsExempt
     }
+    class BillingTotals {
+        <<value object>>
+        Money TotalNet
+        Money TotalWithoutVat
+        VatBreakdown
+        Money TotalVatAmount
+        Money TotalWithVat
+    }
     class QuoteNumber {
         <<value object>>
         string Value
@@ -137,13 +142,14 @@ classDiagram
         string? Siren
     }
 
-    Quote *-- QuoteLine
+    Quote *-- BillingLine
+    Quote --> BillingTotals : computed
     Quote --> QuoteNumber
     Quote --> SellerSnapshot
     Quote --> ClientSnapshot
-    QuoteLine --> Money
-    QuoteLine --> VatRate
-    QuoteLine --> Discount
+    BillingLine --> Money
+    BillingLine --> VatRate
+    BillingLine --> Discount
     Seller --> Address
     Client --> Address
     SellerSnapshot --> Address
@@ -158,8 +164,8 @@ classDiagram
 | Client: name, address, SIREN (B2B) | `Client` | `ClientId`, then a **snapshot** when sent | Buyer (BG-7) |
 | Number, issue date | `Quote` | set by `MarkAsSent()` | BT-1, BT-2 |
 | Currency | `Quote` | at creation | BT-5 (ISO 4217, as `Currency`) |
-| Lines: description, quantity, unit price excl. tax, VAT rate | `QuoteLine` | owned | invoice line (BG-25) |
-| Totals excl. tax, VAT, incl. tax | `Quote` | **computed**, never stored | document totals (BG-22) |
+| Lines: description, quantity, unit price excl. tax, VAT rate | `BillingLine` | owned | invoice line (BG-25) |
+| Totals excl. tax, VAT, incl. tax | `BillingTotals` (shared with `Invoice`) | **computed** from the lines, never stored | document totals (BG-22) |
 | Numbering counter (seller, type, year → last number) | infrastructure | behind a port, in the send transaction | — |
 
 ## 4. How the amounts of a quote are computed

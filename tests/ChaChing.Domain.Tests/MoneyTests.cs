@@ -1,4 +1,4 @@
-using ChaChing.Domain.Billing;
+using ChaChing.Domain.Common;
 
 namespace ChaChing.Domain.Tests
 {
