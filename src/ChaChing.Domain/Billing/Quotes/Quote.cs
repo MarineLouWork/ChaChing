@@ -6,22 +6,25 @@ namespace ChaChing.Domain.Billing.Quotes
 {
     public class Quote
     {
+        #region Constructor, Creator
         private Quote(Guid sellerId, Guid clientId, Currency currency, Discount? discount = null)
         {
             Id = Guid.NewGuid();
+            Status = QuoteStatus.Draft;
             SellerId = ValidateId(sellerId, nameof(sellerId));
             ClientId = ValidateId(clientId, nameof(clientId));
             Currency = ValidateCurrency(currency);
-            Status = QuoteStatus.Draft;
             Discount = discount;
         }
-        public static Quote CreateDraft(Guid sellerId, Guid clientId, Currency currency, Discount? discount = null) => new Quote(sellerId, clientId, currency, discount);
 
+        public static Quote CreateDraft(Guid sellerId, Guid clientId, Currency currency, Discount? discount = null)
+        {
+            return new Quote(sellerId, clientId, currency, discount);
+        }
+        #endregion
+
+        #region Fields
         public Guid Id { get; }
-
-        public Guid SellerId { get; }
-
-        public Guid ClientId { get; }
 
         public QuoteNumber? Number { get; private set; }
 
@@ -31,45 +34,50 @@ namespace ChaChing.Domain.Billing.Quotes
 
         public DateOnly? ValidUntil { get; private set; }
 
-        private readonly List<QuoteLine> _lines = new();
-        public IReadOnlyList<QuoteLine> Lines => _lines;
+        public Guid SellerId { get; }
 
-        public Currency Currency { get; }
-
-        public Money TotalExclTax
-        {
-            get => CalculateTotalExclTax();
-        }
-
-        public Discount? Discount { get; }
+        public Guid ClientId { get; }
 
         public SellerSnapshot? SellerSnapshot { get; private set; }
 
         public ClientSnapshot? ClientSnapshot { get; private set; }
 
-        #region VAT (ADR 0020) — TODO Marine
-        /// <summary>
-        /// One subtotal per VAT rate: the taxable amount (after the quote discount, shared pro rata between the rates)
-        /// and its VAT. The taxable amounts always add up to <see cref="TotalExclTax"/>.
-        /// </summary>
+        private readonly List<QuoteLine> _lines = new();
+        public IReadOnlyList<QuoteLine> Lines => _lines;
+
+        public Currency Currency { get; }
+
+        public Discount? Discount { get; }
+
         public IReadOnlyList<VatSubtotal> VatBreakdown
         {
-            get => throw new NotImplementedException();
+            get => CalculateVatBreakdown();
         }
 
-        public Money TotalVat
+        public Money TotalVatAmount
         {
-            get => throw new NotImplementedException();
+            get => CalculateTotalVatAmount();
         }
 
-        public Money TotalInclTax
+        public Money TotalWithVat
         {
-            get => throw new NotImplementedException();
+            get => TotalWithoutVat + TotalVatAmount;
+        }
+
+        /// <summary>After the quote discount (EN 16931 BT-109): what the VAT is computed on. See <see cref="TotalNet"/> for before.</summary>
+        public Money TotalWithoutVat
+        {
+            get => this.Discount?.Apply(this.TotalNet) ?? this.TotalNet;
+        }
+
+        /// <summary>The sum of the line totals, BEFORE the quote discount (EN 16931 BT-106, ADR 0022).</summary>
+        public Money TotalNet
+        {
+            get => CalculateTotalNet();
         }
         #endregion
 
         #region Lifecycle (ADR 0018, 0019)
-
         public void MarkAsSent(QuoteNumber number, DateOnly issueDate, DateOnly validUntil, SellerSnapshot seller, ClientSnapshot client)
         {
             ArgumentNullException.ThrowIfNull(number);
@@ -157,6 +165,7 @@ namespace ChaChing.Domain.Billing.Quotes
 
         #endregion
 
+        #region Validation
         private static Guid ValidateId(Guid id, string paramName)
         {
             if (id == Guid.Empty)
@@ -176,20 +185,65 @@ namespace ChaChing.Domain.Billing.Quotes
             if (currency != Currency)
                 throw new ArgumentException("A quote holds a single currency.", paramName);
         }
+        #endregion
 
-        private Money CalculateTotalExclTax()
+        #region Calculates
+        private Money CalculateTotalNet()
         {
-            Money totalExclTax = Money.Zero(Currency);
+            Money totalNet = Money.Zero(Currency);
 
             foreach (QuoteLine line in Lines)
+                totalNet += line.TotalPrice;
+
+            return totalNet;
+        }
+
+        private Money CalculateTotalVatAmount()
+        {
+            Money totalVatAmount = Money.Zero(Currency);
+
+            foreach (VatSubtotal detail in VatBreakdown)
+                totalVatAmount += detail.VatAmount;
+
+            return totalVatAmount;
+        }
+
+        private IReadOnlyList<VatSubtotal> CalculateVatBreakdown()
+        {
+            List<VatSubtotal> list = new List<VatSubtotal>();
+
+            // If there is no line, nothing to compute
+            if (Lines.Count == 0)
+                return list;
+
+            // If there is a discount on the quote, we compute the ratio discount per product before applying VAT
+            decimal ratio = TotalNet.Amount == 0 ? 1m : TotalWithoutVat.Amount / TotalNet.Amount;
+
+            // We group lines by VAT rate
+            var linesByVatRate = Lines.GroupBy(l => l.VatRate).ToList();
+            Money alreadyDistributed = Money.Zero(Currency);
+
+            for (int i = 0; i < linesByVatRate.Count; i++)
             {
-                totalExclTax += line.TotalPrice;
+                var group = linesByVatRate[i];
+
+                // We sum up the total prices of every lines
+                Money groupTotal = Money.Zero(Currency);
+                foreach (QuoteLine line in group)
+                    groupTotal += line.TotalPrice;
+
+                // The last group takes the rest, so the bases always add up to TotalWithoutVat
+                bool isLast = i == linesByVatRate.Count - 1;
+                Money taxableAmount = isLast ? TotalWithoutVat - alreadyDistributed : groupTotal * ratio;
+
+                alreadyDistributed += taxableAmount;
+
+                Money vatAmount = group.Key.VatOn(taxableAmount);
+                list.Add(new VatSubtotal(group.Key, taxableAmount, vatAmount));
             }
 
-            if (Discount != null)
-                totalExclTax = Discount.Apply(totalExclTax);
-
-            return totalExclTax;
+            return list;
         }
+        #endregion
     }
 }

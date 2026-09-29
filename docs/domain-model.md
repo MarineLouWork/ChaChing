@@ -81,9 +81,10 @@ classDiagram
         ClientSnapshot? ClientSnapshot
         AddLine(...)
         MarkAsSent(number, issueDate, validUntil)
-        Money TotalExclTax
-        Money TotalVat
-        Money TotalInclTax
+        Money TotalNet
+        Money TotalWithoutVat
+        Money TotalVatAmount
+        Money TotalWithVat
     }
 
     class QuoteLine {
@@ -161,7 +162,41 @@ classDiagram
 | Totals excl. tax, VAT, incl. tax | `Quote` | **computed**, never stored | document totals (BG-22) |
 | Numbering counter (seller, type, year → last number) | infrastructure | behind a port, in the send transaction | — |
 
-## 4. Lifecycle of a quote
+## 4. How the amounts of a quote are computed
+
+**Rule of thumb: every discount comes before the VAT.** Everything stays excl. VAT until the very last step.
+
+```mermaid
+flowchart TD
+    L["<b>Each line</b><br/>Quantity × UnitPrice<br/>then the line discount"] --> TP["<b>Line.TotalPrice</b><br/>line net amount, excl. VAT"]
+    TP --> S["<b>TotalNet</b> (sum of the lines)<br/>excl. VAT, before the quote discount"]
+    S --> D["the quote discount<br/>(floored at 0)"]
+    D --> TW["<b>TotalWithoutVat</b>"]
+    TP --> G["<b>Group the lines by VatRate</b><br/>one base per rate"]
+    G --> P["<b>Share TotalWithoutVat pro rata</b><br/>base of the rate ÷ TotalNet × TotalWithoutVat<br/>the last rate takes the remainder"]
+    TW --> P
+    P --> B["<b>VatBreakdown</b><br/>per rate: TaxableAmount, VatAmount = rate × TaxableAmount"]
+    B --> TV["<b>TotalVatAmount</b><br/>sum of the VatAmounts"]
+    TW --> TT["<b>TotalWithVat</b><br/>TotalWithoutVat + TotalVatAmount"]
+    TV --> TT
+```
+
+**Worked example**, with a fixed discount of 155 € on the quote:
+
+| Step | 20 % | 5.5 % | Quote |
+|---|---|---|---|
+| Lines (`TotalPrice`) | 3 × 500 € − 10 % = **1,350 €** | 1 × 200 € = **200 €** | |
+| **TotalNet** (sum of the lines) | | | 1,550 € |
+| Quote discount (155 € = 10 % of 1,550 €) | | | − 155 € |
+| **TotalWithoutVat** | | | **1,395 €** |
+| Share of each rate | 1,350 / 1,550 | 200 / 1,550 | |
+| **TaxableAmount** | 1,350 / 1,550 × 1,395 = **1,215 €** | the remainder: 1,395 − 1,215 = **180 €** | 1,395 € ✔ |
+| **VatAmount** | 243 € | 9.90 € | **TotalVatAmount: 252.90 €** |
+| | | | **TotalWithVat: 1,647.90 €** |
+
+Details and rounding: ADR 0006, 0014, 0020.
+
+## 5. Lifecycle of a quote
 
 ```mermaid
 stateDiagram-v2
@@ -176,7 +211,7 @@ stateDiagram-v2
 - **Draft**: editable, no number, references only.
 - **Sent**: frozen. It has a number and snapshots of both parties.
 
-## 5. Out of the MVP
+## 6. Out of the MVP
 
 - **E-invoicing (French reform):** from 1 September 2027, a freelancer must **issue** B2B invoices through an approved platform, in Factur-X, UBL or CII. ChaChing will not become a platform: it will send through one, behind a port (`IInvoiceTransmitter`), one adapter per platform.
 - Product catalogue, credit notes, quote versioning (ADR 0010).
