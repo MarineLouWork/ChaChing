@@ -15,7 +15,6 @@ namespace ChaChing.Domain.Billing.Quotes
             Status = QuoteStatus.Draft;
             Discount = discount;
         }
-
         public static Quote CreateDraft(Guid sellerId, Guid clientId, Currency currency, Discount? discount = null) => new Quote(sellerId, clientId, currency, discount);
 
         public Guid Id { get; }
@@ -32,10 +31,10 @@ namespace ChaChing.Domain.Billing.Quotes
 
         public DateOnly? ValidUntil { get; private set; }
 
-        public Currency Currency { get; }
-
         private readonly List<QuoteLine> _lines = new();
         public IReadOnlyList<QuoteLine> Lines => _lines;
+
+        public Currency Currency { get; }
 
         public Money TotalExclTax
         {
@@ -58,13 +57,11 @@ namespace ChaChing.Domain.Billing.Quotes
             get => throw new NotImplementedException();
         }
 
-        /// <summary>The sum of the VAT of each rate.</summary>
         public Money TotalVat
         {
             get => throw new NotImplementedException();
         }
 
-        /// <summary><see cref="TotalExclTax"/> + <see cref="TotalVat"/>.</summary>
         public Money TotalInclTax
         {
             get => throw new NotImplementedException();
@@ -91,10 +88,10 @@ namespace ChaChing.Domain.Billing.Quotes
                 throw new InvalidOperationException($"This quote already has the number {Number}.");
 
             if (client.ClientId != ClientId)
-                throw new InvalidOperationException("The client is not valid.");
+                throw new ArgumentException("The client is not valid.", nameof(client));
 
-            if (client.ClientId != ClientId)
-                throw new InvalidOperationException("The seller is not valid.");
+            if (seller.SellerId != SellerId)
+                throw new ArgumentException("The seller is not valid.", nameof(seller));
 
             if (seller.VatRegime == VatRegime.Exempt && _lines.Any(line => !line.VatRate.IsExempt))
                 throw new InvalidOperationException("An exempt seller cannot send lines with VAT.");
