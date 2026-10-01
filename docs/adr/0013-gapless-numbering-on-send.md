@@ -1,6 +1,6 @@
 # 0013 — Gapless numbering, assigned when sent
 
-**Status:** Accepted — 28/09/2026
+**Status:** Accepted — 28/09/2026. `QuoteNumber` superseded by [ADR 0028](0028-billing-number-with-document-type.md); the rest stands.
 
 ## Context
 

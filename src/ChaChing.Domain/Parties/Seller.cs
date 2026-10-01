@@ -10,7 +10,7 @@ namespace ChaChing.Domain.Parties
             LegalName = ValidateLegalName(legalName);
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Siret = ValidateSiret(siret);
-            VatRegime = ValidateVatRegime(vatRegime);
+            VatRegime = Guard.ValidateEnum(vatRegime, nameof(vatRegime));
             VatNumber = ValidateVatNumber(vatNumber);
         }
 
@@ -42,13 +42,6 @@ namespace ChaChing.Domain.Parties
             if (digits.Length != 14 || !digits.All(char.IsAsciiDigit))
                 throw new ArgumentException("A SIRET has 14 digits.", nameof(siret));
             return digits;
-        }
-
-        private static VatRegime ValidateVatRegime(VatRegime vatRegime)
-        {
-            if (!Enum.IsDefined(vatRegime))
-                throw new ArgumentException("The VAT regime is not valid.", nameof(vatRegime));
-            return vatRegime;
         }
 
         private static string? ValidateVatNumber(string? vatNumber)

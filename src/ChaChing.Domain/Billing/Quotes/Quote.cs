@@ -10,9 +10,9 @@ namespace ChaChing.Domain.Billing.Quotes
         {
             Id = Guid.NewGuid();
             Status = QuoteStatus.Draft;
-            SellerId = ValidateId(sellerId, nameof(sellerId));
-            ClientId = ValidateId(clientId, nameof(clientId));
-            Currency = ValidateCurrency(currency);
+            SellerId = Guard.ValidateGuid(sellerId, nameof(sellerId));
+            ClientId = Guard.ValidateGuid(clientId, nameof(clientId));
+            Currency = Guard.ValidateEnum(currency, nameof(currency));
             Discount = discount;
         }
 
@@ -25,7 +25,7 @@ namespace ChaChing.Domain.Billing.Quotes
         #region Fields
         public Guid Id { get; }
 
-        public QuoteNumber? Number { get; private set; }
+        public BillingNumber? Number { get; private set; }
 
         public QuoteStatus Status { get; private set; }
 
@@ -53,7 +53,7 @@ namespace ChaChing.Domain.Billing.Quotes
         #endregion
 
         #region Lifecycle (ADR 0018, 0019)
-        public void MarkAsSent(QuoteNumber number, DateOnly issueDate, DateOnly validUntil, SellerSnapshot seller, ClientSnapshot client)
+        public void MarkAsSent(BillingNumber number, DateOnly issueDate, DateOnly validUntil, SellerSnapshot seller, ClientSnapshot client)
         {
             ArgumentNullException.ThrowIfNull(number);
             ArgumentNullException.ThrowIfNull(client);
@@ -104,12 +104,6 @@ namespace ChaChing.Domain.Billing.Quotes
             EnsureStatus(QuoteStatus.Declined);
             Status = QuoteStatus.Draft;
         }
-
-        private void EnsureStatus(QuoteStatus expected)
-        {
-            if (Status != expected)
-                throw new InvalidOperationException($"This action requires a {expected} quote; this one is {Status}.");
-        }
         #endregion
 
         #region Lines (draft only)
@@ -141,18 +135,10 @@ namespace ChaChing.Domain.Billing.Quotes
         #endregion
 
         #region Validation
-        private static Guid ValidateId(Guid id, string paramName)
+        private void EnsureStatus(QuoteStatus expected)
         {
-            if (id == Guid.Empty)
-                throw new ArgumentException($"The {paramName} is empty.", paramName);
-            return id;
-        }
-
-        private static Currency ValidateCurrency(Currency currency)
-        {
-            if (!Enum.IsDefined(currency))
-                throw new ArgumentException("The currency is not valid.", nameof(currency));
-            return currency;
+            if (Status != expected)
+                throw new InvalidOperationException($"This action requires a {expected} quote; this one is {Status}.");
         }
 
         private void EnsureSameCurrency(Currency currency, string paramName)

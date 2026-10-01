@@ -4,18 +4,11 @@ namespace ChaChing.Domain.Common
     {
         public decimal Amount { get; } = RoundAmount(Amount);
 
-        public Currency Currency { get; } = ValidateCurrency(Currency);
+        public Currency Currency { get; } = Guard.ValidateEnum(Currency, nameof(Currency));
 
         public static Money Zero(Currency currency) => new Money(0m, currency);
 
         static decimal RoundAmount(decimal amount) => Math.Round(amount, 2, MidpointRounding.ToEven);
-
-        static Currency ValidateCurrency(Currency currency)
-        {
-            if (!Enum.IsDefined(currency))
-                throw new ArgumentException("The currency is not valid.", nameof(currency));
-            return currency;
-        }
 
         private void EnsureSameCurrency(Currency currency)
         {

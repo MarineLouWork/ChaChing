@@ -20,15 +20,9 @@ namespace ChaChing.Domain.Parties
 
         private Client(Guid id, Guid sellerId, string name, string email, Address address, string? siren)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("The name is required.", nameof(name));
-
-            if (sellerId == Guid.Empty)
-                throw new ArgumentException("The sellerId is empty.", nameof(sellerId));
-
             Id = id;
-            SellerId = sellerId;
-            Name = name.Trim();
+            SellerId = Guard.ValidateGuid(sellerId, nameof(sellerId));
+            Name = Guard.ValidateEmptyString(name, nameof(name)).Trim();
             Email = ValidateEmail(email);
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Siren = ValidateSiren(siren);
@@ -39,9 +33,7 @@ namespace ChaChing.Domain.Parties
 
         public static Client Rehydrate(Guid id, Guid sellerId, string name, string email, Address address, string? siren = null)
         {
-            if (id == Guid.Empty)
-                throw new ArgumentException("The id is empty.", nameof(id));
-
+            id = Guard.ValidateGuid(id, nameof(id));
             return new Client(id, sellerId, name, email, address, siren);
         }
 

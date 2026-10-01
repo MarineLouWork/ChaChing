@@ -32,6 +32,9 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0023](0023-zero-total-keeps-vat-breakdown.md) | A zero total keeps its VAT breakdown | Accepted |
 | [0024](0024-shared-billing-line-and-totals.md) | Lines and totals shared by quote and invoice | Accepted |
 | [0025](0025-folders-by-who-uses-them.md) | Domain folders grouped by who uses the types | Accepted |
+| [0026](0026-invoice-create-draft.md) | `Invoice.CreateDraft`: its own aggregate, an optional link to a quote | Accepted |
+| [0027](0027-guard-for-technical-preconditions.md) | `Guard` for technical preconditions, business rules stay in the aggregates | Accepted |
+| [0028](0028-billing-number-with-document-type.md) | One `BillingNumber` for quotes and invoices, carrying its document type (supersedes part of 0013) | Accepted |
 
 The overall map of aggregates is in [`../domain-model.md`](../domain-model.md).
 

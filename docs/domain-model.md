@@ -74,7 +74,7 @@ classDiagram
         QuoteStatus Status
         IReadOnlyList~BillingLine~ Lines
         Discount? Discount
-        QuoteNumber? Number
+        BillingNumber? Number
         DateOnly? IssueDate
         DateOnly? ValidUntil
         SellerSnapshot? SellerSnapshot
@@ -123,9 +123,11 @@ classDiagram
         Money TotalVatAmount
         Money TotalWithVat
     }
-    class QuoteNumber {
+    class BillingNumber {
         <<value object>>
-        string Value
+        TypeDocument TypeDocument
+        int Year
+        int Sequence
     }
     class SellerSnapshot {
         <<value object>>
@@ -144,7 +146,7 @@ classDiagram
 
     Quote *-- BillingLine
     Quote --> BillingTotals : computed
-    Quote --> QuoteNumber
+    Quote --> BillingNumber
     Quote --> SellerSnapshot
     Quote --> ClientSnapshot
     BillingLine --> Money
