@@ -7,7 +7,7 @@ namespace ChaChing.Domain.Billing
         /// <param name="vatRate">Null means <see cref="VatRate.Standard"/> (20 %).</param>
         public BillingLine(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
-            Description = ValidateDescription(description);
+            Description = Guard.ValidateAndTrimEmptyString(description, nameof(description));
             Quantity = ValidateQuantity(quantity);
             UnitPrice = ValidateUnitPrice(unitPrice);
             Discount = discount;
@@ -18,7 +18,7 @@ namespace ChaChing.Domain.Billing
         /// <param name="vatRate">Null means <see cref="VatRate.Standard"/> (20 %), as in the constructor.</param>
         internal void Update(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
-            string validDescription = ValidateDescription(description);
+            string validDescription = Guard.ValidateAndTrimEmptyString(description, nameof(description));
             decimal validQuantity = ValidateQuantity(quantity);
             Money validUnitPrice = ValidateUnitPrice(unitPrice);
 
@@ -48,13 +48,6 @@ namespace ChaChing.Domain.Billing
         public Discount? Discount { get; private set; }
 
         public VatRate VatRate { get; private set; }
-
-        private static string ValidateDescription(string description)
-        {
-            if (string.IsNullOrWhiteSpace(description))
-                throw new ArgumentException("The description is required.", nameof(description));
-            return description.Trim();
-        }
 
         private static decimal ValidateQuantity(decimal quantity)
         {

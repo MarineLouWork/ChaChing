@@ -3,11 +3,11 @@ namespace ChaChing.Domain.Common
     /// <summary>Technical preconditions shared by the whole domain. Business rules stay in the aggregates.</summary>
     public static class Guard
     {
-        public static string ValidateEmptyString(string text, string paramName)
+        public static string ValidateAndTrimEmptyString(string text, string paramName)
         {
             if (string.IsNullOrWhiteSpace(text))
                 throw new ArgumentException($"The {paramName} is empty.", paramName);
-            return text;
+            return text.Trim();
         }
 
         public static Guid? ValidateNullableGuid(Guid? guid, string paramName)

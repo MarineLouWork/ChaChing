@@ -22,7 +22,7 @@ namespace ChaChing.Domain.Parties
         {
             Id = id;
             SellerId = Guard.ValidateGuid(sellerId, nameof(sellerId));
-            Name = Guard.ValidateEmptyString(name, nameof(name)).Trim();
+            Name = Guard.ValidateAndTrimEmptyString(name, nameof(name));
             Email = ValidateEmail(email);
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Siren = ValidateSiren(siren);
@@ -44,13 +44,10 @@ namespace ChaChing.Domain.Parties
 
         private static string ValidateEmail(string email)
         {
-            if (string.IsNullOrWhiteSpace(email))
-                throw new ArgumentException("The email is required.", nameof(email));
-
+            email = Guard.ValidateAndTrimEmptyString(email, nameof(email));
             if (!email.Contains('@'))
                 throw new ArgumentException("The email must contain an @.", nameof(email));
-
-            return email.Trim();
+            return email;
         }
 
         private static string? ValidateSiren(string? siren)

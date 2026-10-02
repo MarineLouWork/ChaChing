@@ -1,35 +1,34 @@
 using ChaChing.Domain.Billing;
-using ChaChing.Domain.Common;
 
 namespace ChaChing.Domain.Tests
 {
     public class BillingNumberTests
     {
         [Theory]
-        [InlineData(2026, 42, "DEV-2026-0042")]
-        [InlineData(2026, 1, "DEV-2026-0001")]
-        [InlineData(2026, 12345, "DEV-2026-12345")]
+        [InlineData(2026, 42, "QUO-2026-0042")]
+        [InlineData(2026, 1, "QUO-2026-0001")]
+        [InlineData(2026, 12345, "QUO-2026-12345")]
         public void ToString_IsTheDisplayedReference(int year, int sequence, string expected)
         {
-            Assert.Equal(expected, new BillingNumber(TypeDocument.DEV, year, sequence).ToString());
+            Assert.Equal(expected, new BillingNumber(TypeDocument.QUO, year, sequence).ToString());
         }
 
         [Fact]
         public void ToString_OfAnInvoiceNumber_StartsWithTheInvoicePrefix()
         {
-            Assert.Equal("FAC-2026-0042", new BillingNumber(TypeDocument.FAC, 2026, 42).ToString());
+            Assert.Equal("INV-2026-0042", new BillingNumber(TypeDocument.INV, 2026, 42).ToString());
         }
 
         [Fact]
         public void SameYearAndSequence_AreEqual()
         {
-            Assert.Equal(new BillingNumber(TypeDocument.DEV, 2026, 42), new BillingNumber(TypeDocument.DEV, 2026, 42));
+            Assert.Equal(new BillingNumber(TypeDocument.QUO, 2026, 42), new BillingNumber(TypeDocument.QUO, 2026, 42));
         }
 
         [Fact]
         public void SameYearAndSequence_OfAnotherDocumentType_AreNotEqual()
         {
-            Assert.NotEqual(new BillingNumber(TypeDocument.DEV, 2026, 42), new BillingNumber(TypeDocument.FAC, 2026, 42));
+            Assert.NotEqual(new BillingNumber(TypeDocument.QUO, 2026, 42), new BillingNumber(TypeDocument.INV, 2026, 42));
         }
 
         [Fact]
@@ -45,7 +44,7 @@ namespace ChaChing.Domain.Tests
         [InlineData(-1)]
         public void Create_WithSequenceBelowOne_Throws(int sequence)
         {
-            var action = () => new BillingNumber(TypeDocument.DEV, 2026, sequence);
+            var action = () => new BillingNumber(TypeDocument.QUO, 2026, sequence);
 
             Assert.Throws<ArgumentOutOfRangeException>(action);
         }
@@ -55,7 +54,7 @@ namespace ChaChing.Domain.Tests
         [InlineData(10000)]
         public void Create_WithYearOutOfRange_Throws(int year)
         {
-            var action = () => new BillingNumber(TypeDocument.DEV, year, 1);
+            var action = () => new BillingNumber(TypeDocument.QUO, year, 1);
 
             Assert.Throws<ArgumentOutOfRangeException>(action);
         }

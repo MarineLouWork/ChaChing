@@ -7,7 +7,7 @@ namespace ChaChing.Domain.Parties
         private Seller(Guid id, string legalName, Address address, string siret, VatRegime vatRegime, string? vatNumber)
         {
             Id = id;
-            LegalName = ValidateLegalName(legalName);
+            LegalName = Guard.ValidateAndTrimEmptyString(legalName, nameof(legalName));
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Siret = ValidateSiret(siret);
             VatRegime = Guard.ValidateEnum(vatRegime, nameof(vatRegime));
@@ -28,13 +28,6 @@ namespace ChaChing.Domain.Parties
         public VatRegime VatRegime { get; }
 
         public string? VatNumber { get; }
-
-        private static string ValidateLegalName(string legalName)
-        {
-            if (string.IsNullOrWhiteSpace(legalName))
-                throw new ArgumentException("The legal name is required.", nameof(legalName));
-            return legalName.Trim();
-        }
 
         private static string ValidateSiret(string siret)
         {

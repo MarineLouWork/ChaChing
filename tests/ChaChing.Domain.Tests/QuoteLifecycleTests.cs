@@ -7,7 +7,7 @@ namespace ChaChing.Domain.Tests
 {
     public class QuoteLifecycleTests
     {
-        static readonly BillingNumber number = new(TypeDocument.DEV, 2026, 42);
+        static readonly BillingNumber number = new(TypeDocument.QUO, 2026, 42);
         static readonly DateOnly issueDate = new(2026, 9, 28);
         static readonly DateOnly validUntil = new(2026, 10, 28);
         static readonly Seller seller = TestData.Seller();
@@ -225,7 +225,7 @@ namespace ChaChing.Domain.Tests
             Quote quote = DeclinedQuote();
             quote.ReturnToDraft();
 
-            var action = () => quote.MarkAsSent(new BillingNumber(TypeDocument.DEV, 2026, 43), issueDate, validUntil, sellerSnapshot, clientSnapshot);
+            var action = () => quote.MarkAsSent(new BillingNumber(TypeDocument.QUO, 2026, 43), issueDate, validUntil, sellerSnapshot, clientSnapshot);
 
             Assert.Throws<InvalidOperationException>(action);
         }
