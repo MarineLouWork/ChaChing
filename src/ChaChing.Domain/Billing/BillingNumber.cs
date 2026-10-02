@@ -26,5 +26,12 @@ namespace ChaChing.Domain.Billing
                 throw new ArgumentOutOfRangeException(nameof(sequence), "The sequence starts at 1.");
             return sequence;
         }
+
+        public BillingNumber ValidateType(TypeDocument typeExpected)
+        {
+            if (typeExpected != TypeDocument)
+                throw new InvalidOperationException("The number is invalid for this type of document.");
+            return this;
+        }
     }
 }

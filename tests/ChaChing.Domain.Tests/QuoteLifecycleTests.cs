@@ -82,6 +82,19 @@ namespace ChaChing.Domain.Tests
         }
 
         [Fact]
+        public void MarkAsSent_WithAnInvoiceNumber_ThrowsAndStaysDraft()
+        {
+            Quote quote = DraftWithOneLine();
+            BillingNumber invoiceNumber = new(TypeDocument.INV, 2026, 42);
+
+            var action = () => quote.MarkAsSent(invoiceNumber, issueDate, validUntil, sellerSnapshot, clientSnapshot);
+
+            Assert.Throws<InvalidOperationException>(action);
+            Assert.Equal(QuoteStatus.Draft, quote.Status);
+            Assert.Null(quote.Number);
+        }
+
+        [Fact]
         public void MarkAsSent_ValidUntilBeforeIssueDate_ThrowsAndStaysDraft()
         {
             Quote quote = DraftWithOneLine();

@@ -79,7 +79,7 @@ namespace ChaChing.Domain.Billing.Quotes
             if (seller.VatRegime == VatRegime.Exempt && _lines.Any(line => !line.VatRate.IsExempt))
                 throw new InvalidOperationException("An exempt seller cannot send lines with VAT.");
 
-            Number = number;
+            Number = number.ValidateType(TypeDocument.QUO);
             IssueDate = issueDate;
             ValidUntil = validUntil;
             Status = QuoteStatus.Sent;
