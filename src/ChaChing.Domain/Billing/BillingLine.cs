@@ -1,4 +1,5 @@
 using ChaChing.Domain.Common;
+using ChaChing.Domain.Parties;
 
 namespace ChaChing.Domain.Billing
 {
@@ -64,5 +65,13 @@ namespace ChaChing.Domain.Billing
         }
 
         private Money CalculateTotalPrice() => this.Discount?.Apply(this.UnitPrice.Multiply(this.Quantity)) ?? this.UnitPrice.Multiply(this.Quantity);
+
+        public bool IsAllowedFor(VatRegime vatRegime)
+        {
+            if (vatRegime == VatRegime.Exempt && !this.VatRate.IsExempt)
+                return false;
+            else
+                return true;
+        }
     }
 }

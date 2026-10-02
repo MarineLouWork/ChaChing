@@ -1,5 +1,6 @@
 using ChaChing.Domain.Billing;
 using ChaChing.Domain.Common;
+using ChaChing.Domain.Parties;
 
 namespace ChaChing.Domain.Tests
 {
@@ -103,5 +104,19 @@ namespace ChaChing.Domain.Tests
         }
         #endregion
 
+        #region IsAllowedFor (shared by Quote and Invoice)
+        [Theory]
+        [InlineData(VatRegime.Exempt, true, true)]      // exempt seller, exempt line
+        [InlineData(VatRegime.Exempt, false, false)]    // exempt seller, 20 % line: the forbidden case
+        [InlineData(VatRegime.Subject, false, true)]    // subject seller, 20 % line
+        [InlineData(VatRegime.Subject, true, true)]     // subject seller may bill an exempt line
+        public void IsAllowedFor_DependsOnTheSellerRegimeAndTheLineRate(VatRegime regime, bool lineIsExempt, bool expected)
+        {
+            VatRate rate = lineIsExempt ? VatRate.Exempt : VatRate.Standard;
+            BillingLine line = new("valid description", 1m, fiveHundredEuros, vatRate: rate);
+
+            Assert.Equal(expected, line.IsAllowedFor(regime));
+        }
+        #endregion
     }
 }

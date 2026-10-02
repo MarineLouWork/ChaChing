@@ -161,6 +161,32 @@ namespace ChaChing.Domain.Tests
         }
 
         [Fact]
+        public void Issue_ExemptSellerWithVatLine_ThrowsAndStaysDraft()
+        {
+            Seller exemptSeller = TestData.Seller(VatRegime.Exempt);
+            Invoice invoice = Invoice.CreateDraft(exemptSeller.Id, client.Id, Currency.EUR);
+            invoice.AddLine(new BillingLine("valid description", 1m, new Money(100m, Currency.EUR)));      // 20 % by default
+
+            var action = () => invoice.MarkedAsIssued(number, issueDate, dueDate, SellerSnapshot.From(exemptSeller), clientSnapshot);
+
+            Assert.Throws<InvalidOperationException>(action);
+            Assert.Equal(InvoiceStatus.Draft, invoice.Status);
+            Assert.Null(invoice.Number);
+        }
+
+        [Fact]
+        public void Issue_ExemptSellerWithExemptLines_IsIssued()
+        {
+            Seller exemptSeller = TestData.Seller(VatRegime.Exempt);
+            Invoice invoice = Invoice.CreateDraft(exemptSeller.Id, client.Id, Currency.EUR);
+            invoice.AddLine(new BillingLine("valid description", 1m, new Money(100m, Currency.EUR), vatRate: VatRate.Exempt));
+
+            invoice.MarkedAsIssued(number, issueDate, dueDate, SellerSnapshot.From(exemptSeller), clientSnapshot);
+
+            Assert.Equal(InvoiceStatus.Issued, invoice.Status);
+        }
+
+        [Fact]
         public void Issue_SnapshotStaysFrozen_WhenTheClientIsLaterRenamed()
         {
             Invoice invoice = IssuedInvoice();
@@ -240,6 +266,102 @@ namespace ChaChing.Domain.Tests
             invoice.MarkAsPaid(issueDate);
 
             Assert.Equal(issueDate, invoice.PaymentDate);
+        }
+        #endregion
+
+        #region MarkAsCancelled
+        [Fact]
+        public void MarkAsCancelled_OnIssuedInvoice_IsCancelled()
+        {
+            Invoice invoice = IssuedInvoice();
+
+            invoice.MarkAsCancelled();
+
+            Assert.Equal(InvoiceStatus.Cancelled, invoice.Status);
+        }
+
+        [Fact]
+        public void MarkAsCancelled_KeepsEverythingTheInvoiceSaid()
+        {
+            // A cancelled invoice stays in the books, as it was issued: only its status changes
+            Invoice invoice = IssuedInvoice();
+
+            invoice.MarkAsCancelled();
+
+            Assert.Equal(number, invoice.Number);
+            Assert.Equal(issueDate, invoice.IssueDate);
+            Assert.Equal(dueDate, invoice.DueDate);
+            Assert.Same(sellerSnapshot, invoice.SellerSnapshot);
+            Assert.Same(clientSnapshot, invoice.ClientSnapshot);
+            Assert.Single(invoice.Lines);
+        }
+
+        [Fact]
+        public void MarkAsCancelled_OnDraft_Throws()
+        {
+            Invoice invoice = DraftWithOneLine();
+
+            var action = () => invoice.MarkAsCancelled();
+
+            Assert.Throws<InvalidOperationException>(action);
+            Assert.Equal(InvoiceStatus.Draft, invoice.Status);
+        }
+
+        [Fact]
+        public void MarkAsCancelled_OnPaidInvoice_ThrowsAndStaysPaid()
+        {
+            // A paid invoice is settled: a later credit note (refund) does not change its status
+            Invoice invoice = IssuedInvoice();
+            invoice.MarkAsPaid(new DateOnly(2026, 11, 20));
+
+            var action = () => invoice.MarkAsCancelled();
+
+            Assert.Throws<InvalidOperationException>(action);
+            Assert.Equal(InvoiceStatus.Paid, invoice.Status);
+        }
+
+        [Fact]
+        public void MarkAsCancelled_OnCancelledInvoice_Throws()
+        {
+            Invoice invoice = IssuedInvoice();
+            invoice.MarkAsCancelled();
+
+            var action = () => invoice.MarkAsCancelled();
+
+            Assert.Throws<InvalidOperationException>(action);
+        }
+
+        [Fact]
+        public void MarkAsPaid_OnCancelledInvoice_ThrowsAndStaysCancelled()
+        {
+            Invoice invoice = IssuedInvoice();
+            invoice.MarkAsCancelled();
+
+            var action = () => invoice.MarkAsPaid(new DateOnly(2026, 11, 20));
+
+            Assert.Throws<InvalidOperationException>(action);
+            Assert.Equal(InvoiceStatus.Cancelled, invoice.Status);
+            Assert.Null(invoice.PaymentDate);
+        }
+
+        [Fact]
+        public void AddLine_OnCancelledInvoice_Throws()
+        {
+            Invoice invoice = IssuedInvoice();
+            invoice.MarkAsCancelled();
+
+            var action = () => invoice.AddLine(new BillingLine("valid description", 1m, new Money(50m, Currency.EUR)));
+
+            Assert.Throws<InvalidOperationException>(action);
+        }
+
+        [Fact]
+        public void IsOverdue_WhenCancelled_IsFalse()
+        {
+            Invoice invoice = IssuedInvoice();
+            invoice.MarkAsCancelled();
+
+            Assert.False(invoice.IsOverdue(dueDate.AddDays(30)));
         }
         #endregion
 

@@ -89,6 +89,9 @@ namespace ChaChing.Domain.Billing.Invoices
             if (seller.SellerId != SellerId)
                 throw new ArgumentException("The seller is not valid.", nameof(seller));
 
+            if (_lines.Any(line => !line.IsAllowedFor(seller.VatRegime)))
+                throw new InvalidOperationException("An exempt seller cannot send lines with VAT.");
+
             Number = number.ValidateType(TypeDocument.INV);
             IssueDate = issueDate;
             DueDate = dueDate;
@@ -119,7 +122,6 @@ namespace ChaChing.Domain.Billing.Invoices
         public void MarkAsCancelled()
         {
             EnsureStatus(InvoiceStatus.Issued);
-            DueDate = null;
             Status = InvoiceStatus.Cancelled;
         }
         #endregion

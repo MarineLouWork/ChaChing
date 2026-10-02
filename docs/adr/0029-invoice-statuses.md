@@ -17,7 +17,8 @@
 - **`Declined` is removed**: a quote notion. A client disputing an invoice leads to a credit note.
 - **`Conflicted` is removed**: a dispute is not an accounting state.
 - **`Closed` is removed**: it duplicated `Paid`.
-- **`Cancelled`** is set when a credit note cancels the invoice. The credit note itself comes later.
+- **`Cancelled`** is set when a credit note cancels an **unpaid** invoice (`Issued → Cancelled` only). The credit note itself comes later.
+- **A `Paid` invoice never becomes `Cancelled`** (decided 02/10/2026): `Paid` records that it was settled; a later credit note (refund) is its own document, linked to the invoice, and leaves the invoice's status alone. A cancelled invoice keeps all the mentions it was issued with, due date included.
 - Once issued, an invoice is never modified: an action that is no longer allowed throws `InvalidOperationException` (the state forbids it, not the argument).
 
 ## Consequences

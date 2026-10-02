@@ -76,7 +76,7 @@ namespace ChaChing.Domain.Billing.Quotes
             if (seller.SellerId != SellerId)
                 throw new ArgumentException("The seller is not valid.", nameof(seller));
 
-            if (seller.VatRegime == VatRegime.Exempt && _lines.Any(line => !line.VatRate.IsExempt))
+            if (_lines.Any(line => !line.IsAllowedFor(seller.VatRegime)))
                 throw new InvalidOperationException("An exempt seller cannot send lines with VAT.");
 
             Number = number.ValidateType(TypeDocument.QUO);
