@@ -8,7 +8,7 @@ namespace ChaChing.Domain.Billing
         /// <param name="vatRate">Null means <see cref="VatRate.Standard"/> (20 %).</param>
         public BillingLine(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
-            Description = Guard.ValidateAndTrimEmptyString(description, nameof(description));
+            Description = ArgumentValidator.NonBlankText(description, nameof(description));
             Quantity = ValidateQuantity(quantity);
             UnitPrice = ValidateUnitPrice(unitPrice);
             Discount = discount;
@@ -19,7 +19,7 @@ namespace ChaChing.Domain.Billing
         /// <param name="vatRate">Null means <see cref="VatRate.Standard"/> (20 %), as in the constructor.</param>
         internal void Update(string description, decimal quantity, Money unitPrice, Discount? discount = null, VatRate? vatRate = null)
         {
-            string validDescription = Guard.ValidateAndTrimEmptyString(description, nameof(description));
+            string validDescription = ArgumentValidator.NonBlankText(description, nameof(description));
             decimal validQuantity = ValidateQuantity(quantity);
             Money validUnitPrice = ValidateUnitPrice(unitPrice);
 

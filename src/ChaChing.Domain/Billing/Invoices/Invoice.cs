@@ -11,10 +11,10 @@ namespace ChaChing.Domain.Billing.Invoices
             Id = Guid.NewGuid();
 
             Status = InvoiceStatus.Draft;
-            SellerId = Guard.ValidateGuid(sellerId, nameof(sellerId));
-            ClientId = Guard.ValidateGuid(clientId, nameof(clientId));
-            Currency = Guard.ValidateEnum(currency, nameof(currency));
-            QuoteId = Guard.ValidateNullableGuid(quoteId, nameof(quoteId));
+            SellerId = ArgumentValidator.Guid(sellerId, nameof(sellerId));
+            ClientId = ArgumentValidator.Guid(clientId, nameof(clientId));
+            Currency = ArgumentValidator.Enum(currency, nameof(currency));
+            QuoteId = ArgumentValidator.NullableGuid(quoteId, nameof(quoteId));
             Discount = discount;
         }
 

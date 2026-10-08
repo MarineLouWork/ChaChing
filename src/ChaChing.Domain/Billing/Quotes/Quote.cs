@@ -10,9 +10,9 @@ namespace ChaChing.Domain.Billing.Quotes
         {
             Id = Guid.NewGuid();
             Status = QuoteStatus.Draft;
-            SellerId = Guard.ValidateGuid(sellerId, nameof(sellerId));
-            ClientId = Guard.ValidateGuid(clientId, nameof(clientId));
-            Currency = Guard.ValidateEnum(currency, nameof(currency));
+            SellerId = ArgumentValidator.Guid(sellerId, nameof(sellerId));
+            ClientId = ArgumentValidator.Guid(clientId, nameof(clientId));
+            Currency = ArgumentValidator.Enum(currency, nameof(currency));
             Discount = discount;
         }
 

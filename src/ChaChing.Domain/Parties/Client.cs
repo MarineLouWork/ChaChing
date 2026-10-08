@@ -21,8 +21,8 @@ namespace ChaChing.Domain.Parties
         private Client(Guid id, Guid sellerId, string name, string email, Address address, string? siren)
         {
             Id = id;
-            SellerId = Guard.ValidateGuid(sellerId, nameof(sellerId));
-            Name = Guard.ValidateAndTrimEmptyString(name, nameof(name));
+            SellerId = ArgumentValidator.Guid(sellerId, nameof(sellerId));
+            Name = ArgumentValidator.NonBlankText(name, nameof(name));
             Email = ValidateEmail(email);
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Siren = ValidateSiren(siren);
@@ -33,7 +33,7 @@ namespace ChaChing.Domain.Parties
 
         public static Client Rehydrate(Guid id, Guid sellerId, string name, string email, Address address, string? siren = null)
         {
-            id = Guard.ValidateGuid(id, nameof(id));
+            id = ArgumentValidator.Guid(id, nameof(id));
             return new Client(id, sellerId, name, email, address, siren);
         }
 
@@ -44,7 +44,7 @@ namespace ChaChing.Domain.Parties
 
         private static string ValidateEmail(string email)
         {
-            email = Guard.ValidateAndTrimEmptyString(email, nameof(email));
+            email = ArgumentValidator.NonBlankText(email, nameof(email));
             if (!email.Contains('@'))
                 throw new ArgumentException("The email must contain an @.", nameof(email));
             return email;

@@ -1,32 +1,33 @@
 namespace ChaChing.Domain.Common
 {
     /// <summary>Technical preconditions shared by the whole domain. Business rules stay in the aggregates.</summary>
-    public static class Guard
+    public static class ArgumentValidator
     {
-        public static string ValidateAndTrimEmptyString(string text, string paramName)
+        /// <summary>Refuses null, empty and blank text; returns the text trimmed.</summary>
+        public static string NonBlankText(string text, string paramName)
         {
             if (string.IsNullOrWhiteSpace(text))
                 throw new ArgumentException($"The {paramName} is empty.", paramName);
             return text.Trim();
         }
 
-        public static Guid? ValidateNullableGuid(Guid? guid, string paramName)
+        public static Guid? NullableGuid(Guid? guid, string paramName)
         {
-            if (guid == Guid.Empty)
+            if (guid == System.Guid.Empty)
                 throw new ArgumentException($"The {paramName} is empty.", paramName);
             return guid;
         }
 
-        public static Guid ValidateGuid(Guid guid, string paramName)
+        public static Guid Guid(Guid guid, string paramName)
         {
-            if (guid == Guid.Empty)
+            if (guid == System.Guid.Empty)
                 throw new ArgumentException($"The {paramName} is empty.", paramName);
             return guid;
         }
 
-        public static TEnum ValidateEnum<TEnum>(TEnum value, string paramName) where TEnum : struct, Enum
+        public static TEnum Enum<TEnum>(TEnum value, string paramName) where TEnum : struct, System.Enum
         {
-            if (!Enum.IsDefined(value))
+            if (!System.Enum.IsDefined(value))
                 throw new ArgumentException($"The {paramName} is not valid.", paramName);
             return value;
         }

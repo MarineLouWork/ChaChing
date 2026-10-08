@@ -4,7 +4,7 @@ namespace ChaChing.Domain.Common
     {
         public decimal Amount { get; } = RoundAmount(Amount);
 
-        public Currency Currency { get; } = Guard.ValidateEnum(Currency, nameof(Currency));
+        public Currency Currency { get; } = ArgumentValidator.Enum(Currency, nameof(Currency));
 
         public static Money Zero(Currency currency) => new Money(0m, currency);
 

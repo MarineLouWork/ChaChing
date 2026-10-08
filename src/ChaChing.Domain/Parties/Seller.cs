@@ -7,10 +7,10 @@ namespace ChaChing.Domain.Parties
         private Seller(Guid id, string legalName, Address address, string siret, VatRegime vatRegime, string? vatNumber)
         {
             Id = id;
-            LegalName = Guard.ValidateAndTrimEmptyString(legalName, nameof(legalName));
+            LegalName = ArgumentValidator.NonBlankText(legalName, nameof(legalName));
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Siret = ValidateSiret(siret);
-            VatRegime = Guard.ValidateEnum(vatRegime, nameof(vatRegime));
+            VatRegime = ArgumentValidator.Enum(vatRegime, nameof(vatRegime));
             VatNumber = ValidateVatNumber(vatNumber);
         }
 
