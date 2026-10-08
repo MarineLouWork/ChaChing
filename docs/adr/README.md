@@ -35,6 +35,11 @@ An outdated ADR is never rewritten: a new one supersedes it. The history of deci
 | [0026](0026-invoice-create-draft.md) | `Invoice.CreateDraft`: its own aggregate, an optional link to a quote | Accepted |
 | [0027](0027-guard-for-technical-preconditions.md) | `Guard` for technical preconditions, business rules stay in the aggregates | Accepted |
 | [0028](0028-billing-number-with-document-type.md) | One `BillingNumber` for quotes and invoices, carrying its document type (supersedes part of 0013) | Accepted |
+| [0029](0029-invoice-statuses.md) | Four stored invoice statuses; overdue is derived | Accepted |
+| [0030](0030-invoice-issue-rules.md) | Rules shared by quote and invoice at issue; payment date rule | Accepted |
+| [0031](0031-repository-ports-in-application-layer.md) | Repository ports live in the Application layer | Accepted |
+| [0032](0032-quote-to-invoice-converter.md) | A domain converter turns an accepted quote into a draft invoice (refines 0024) | Accepted |
+| [0033](0033-argument-validator-replaces-guard.md) | `ArgumentValidator` replaces `Guard`, without the `Validate` prefix (renames 0027's helper) | Accepted |
 
 The overall map of aggregates is in [`../domain-model.md`](../domain-model.md).
 
