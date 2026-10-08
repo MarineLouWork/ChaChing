@@ -126,7 +126,6 @@ namespace ChaChing.Domain.Billing.Invoices
         }
         #endregion
 
-
         #region Validation
         private void EnsureStatus(InvoiceStatus expected)
         {
