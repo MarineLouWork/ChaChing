@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/ChaChing.Application/ChaChing.Application.csproj" />
     <Project Path="src/ChaChing.Domain/ChaChing.Domain.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/ChaChing.Application.Tests/ChaChing.Application.Tests.csproj" Id="ca664b23-7ae6-4d31-8bd9-0b98e17f7316" />
     <Project Path="tests/ChaChing.Domain.Tests/ChaChing.Domain.Tests.csproj" />
   </Folder>
 </Solution>
