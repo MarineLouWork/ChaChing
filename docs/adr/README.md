@@ -1,46 +1,45 @@
-# Architecture Decision Records (ADR)
+# Architecture Decision Records
 
-One file per structuring decision: the **context**, the **decision**, and above all the **consequences**, including the price paid.
+One file per structuring decision: the **context**, the **decision**, and above all the **consequences**, including the **price paid** and the **alternatives set aside**. An ADR describes the decision as it stands today, not the road that led to it.
 
-Format: `NNNN-short-title.md`, status `Proposed` / `Accepted` / `Superseded by NNNN`.
-An outdated ADR is never rewritten: a new one supersedes it. The history of decisions is part of the value.
+Format: `NNNN-short-title.md`. When a decision is replaced, a new ADR supersedes the old one, which then gets the status `Superseded by NNNN`.
 
-| # | Decision | Status |
-|---|---|---|
-| [0001](0001-client-identity-by-id.md) | `Client` is identified by its `Id`, not by its data | Accepted |
-| [0002](0002-client-create-rehydrate.md) | Private constructor + `Create` / `Rehydrate` | Accepted |
-| [0003](0003-money-signed-value-object.md) | `Money` is a signed value object | Accepted |
-| [0004](0004-money-currency-iso-enum.md) | `Currency` is an `enum` of ISO 4217 codes | Accepted |
-| [0005](0005-money-read-only-properties.md) | `Money` properties are read-only | Accepted |
-| [0006](0006-money-rounding-at-construction.md) | Rounding to 2 decimals, at construction | Accepted |
-| [0007](0007-discount-abstract-class.md) | `Discount` is an abstract class; its contract announces the currency exception | Accepted |
-| [0008](0008-projects-created-when-needed.md) | One solution, projects created only when a layer needs them | Accepted |
-| [0009](0009-discount-business-rules.md) | Discounts: zero accepted, rates from 0 to 100 % | Accepted |
-| [0010](0010-quote-aggregate.md) | `Quote` is an aggregate, `QuoteLine` a local entity | Accepted |
-| [0011](0011-client-id-as-guid.md) | `ClientId` is a plain `Guid`, its existence is checked by the application layer | Accepted |
-| [0012](0012-seller-and-snapshots-on-send.md) | Multi-seller, references while drafting, snapshots when sent | Accepted |
-| [0013](0013-gapless-numbering-on-send.md) | Gapless numbering, assigned when sent | Accepted |
-| [0014](0014-vat-rate-per-line.md) | VAT: a rate per line, the regime on the seller | Accepted |
-| [0015](0015-vocabulary-follows-en-16931.md) | The domain vocabulary follows EN 16931 (except `Client`) | Accepted |
-| [0016](0016-quote-create-draft.md) | `Quote.CreateDraft`, no `Rehydrate` yet | Accepted |
-| [0017](0017-quote-update-line-through-root.md) | Lines are edited through the root, with a single `UpdateLine` | Accepted |
-| [0018](0018-quote-lifecycle.md) | Quote lifecycle: guarded transitions, a number kept forever | Accepted |
-| [0019](0019-snapshots-taken-by-mark-as-sent.md) | Snapshots are built from the aggregates and checked by the quote | Accepted |
-| [0020](0020-vat-breakdown-pro-rata.md) | VAT breakdown per rate, the quote discount shared pro rata | Accepted |
-| [0021](0021-totals-named-after-en-16931.md) | The document totals take their EN 16931 names | Accepted |
-| [0022](0022-total-net-before-quote-discount.md) | `TotalNet`: the sum of the lines, before the quote discount | Accepted |
-| [0023](0023-zero-total-keeps-vat-breakdown.md) | A zero total keeps its VAT breakdown | Accepted |
-| [0024](0024-shared-billing-line-and-totals.md) | Lines and totals shared by quote and invoice | Accepted |
-| [0025](0025-folders-by-who-uses-them.md) | Domain folders grouped by who uses the types | Accepted |
-| [0026](0026-invoice-create-draft.md) | `Invoice.CreateDraft`: its own aggregate, an optional link to a quote | Accepted |
-| [0027](0027-guard-for-technical-preconditions.md) | `Guard` for technical preconditions, business rules stay in the aggregates | Accepted |
-| [0028](0028-billing-number-with-document-type.md) | One `BillingNumber` for quotes and invoices, carrying its document type (supersedes part of 0013) | Accepted |
-| [0029](0029-invoice-statuses.md) | Four stored invoice statuses; overdue is derived | Accepted |
-| [0030](0030-invoice-issue-rules.md) | Rules shared by quote and invoice at issue; payment date rule | Accepted |
-| [0031](0031-repository-ports-in-application-layer.md) | Repository ports live in the Application layer | Accepted |
-| [0032](0032-quote-to-invoice-converter.md) | A domain converter turns an accepted quote into a draft invoice (refines 0024) | Accepted |
-| [0033](0033-argument-validator-replaces-guard.md) | `ArgumentValidator` replaces `Guard`, without the `Validate` prefix (renames 0027's helper) | Accepted |
+The numbers are stable identifiers (the code refers to them), so there are gaps: the decisions that were merged into another one or judged not structuring (a rename, a rounding detail) were dropped on 2026-10-09, before publication. Their earlier wording is in the git history.
 
-The overall map of aggregates is in [`../domain-model.md`](../domain-model.md).
+## Domain modelling
 
-ADRs 0001 to 0007 were written in French in the `Katas` repository, then imported and translated on 24/09/2026. The code names were translated at the same time (`Remise` → `Discount`, `Devise` → `Currency`, `Creer` → `Create`…).
+| # | Decision |
+|---|---|
+| [0001](0001-entities-identity-and-factories.md) | Entities are identified by their `Id` and built through factories |
+| [0003](0003-money-value-object.md) | `Money` is an immutable, signed value object, rounded at construction |
+| [0004](0004-currency-iso-enum.md) | `Currency` is an `enum` of ISO 4217 numeric codes |
+| [0007](0007-discount-abstract-class.md) | `Discount` is an abstract class (template method), its contract announces the currency exception |
+| [0010](0010-quote-aggregate.md) | `Quote` is an aggregate root; lines edited through it, other aggregates referenced by id |
+| [0015](0015-vocabulary-follows-en-16931.md) | The domain vocabulary follows EN 16931 |
+| [0027](0027-argument-validator.md) | `ArgumentValidator` for technical preconditions, business rules stay in the aggregates |
+
+## Billing rules
+
+| # | Decision |
+|---|---|
+| [0012](0012-multi-seller-and-snapshots.md) | Multi-seller, references while drafting, snapshots when sent |
+| [0019](0019-snapshots-built-from-aggregates.md) | Snapshots are built from the aggregates and checked by the document |
+| [0013](0013-gapless-numbering.md) | Gapless numbering, assigned when sent, one `BillingNumber` for every document |
+| [0014](0014-vat-rate-per-line.md) | VAT: a rate per line, the regime on the seller |
+| [0020](0020-vat-breakdown-pro-rata.md) | VAT breakdown per rate, the document discount shared pro rata |
+| [0018](0018-quote-lifecycle.md) | Quote lifecycle: guarded transitions, a number kept forever |
+| [0024](0024-invoice-aggregate-shared-lines-and-totals.md) | `Invoice` is its own aggregate; lines and totals are shared types |
+| [0029](0029-invoice-lifecycle.md) | Invoice lifecycle: four stored statuses, overdue is derived |
+| [0032](0032-quote-to-invoice-converter.md) | A domain converter turns an accepted quote into a draft invoice |
+
+## Architecture and application layer
+
+| # | Decision |
+|---|---|
+| [0008](0008-solution-and-folder-layout.md) | One solution, projects created when a layer needs them, folders by who uses the types |
+| [0031](0031-repository-ports-in-application.md) | Repository ports live in the Application layer |
+| [0034](0034-already-invoiced-rule-in-use-case.md) | "Already invoiced" is decided by the use case; the port returns statuses |
+| [0035](0035-ports-exchange-aggregates-not-commands.md) | Ports exchange aggregates; the use case builds them from the command |
+| [0036](0036-seller-existence-checked-by-use-case.md) | "The seller exists" is checked by the use case through `ISellerRepository.Exists` |
+
+See also: [architecture](../architecture.md) · [domain model](../domain-model.md) · [use cases](../use-cases.md) · [roadmap](../roadmap.md)

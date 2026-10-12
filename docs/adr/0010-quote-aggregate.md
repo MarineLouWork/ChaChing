@@ -1,36 +1,37 @@
-# 0010 — `Quote` is an aggregate, `QuoteLine` a local entity
+# 0010 — `Quote` is an aggregate root; its lines are edited through it, other aggregates are referenced by id
 
-**Status:** Accepted — 25/09/2026
+**Status:** Accepted
 
 ## Context
 
-A quote holds lines, and rules that span several objects at once: a single currency, a total computed from the lines and the discounts, a lifecycle (draft, sent, accepted…). If any code could modify a line directly, nobody would guarantee these rules.
+A quote holds lines and rules that span several objects: a single currency, a total computed from lines and discounts, a lifecycle. If any code could modify a line directly, nobody would guarantee these rules. `Lines` being read-only only forbids adding or removing: anyone holding a `BillingLine` could still call its methods, even on a sent quote. And the rule "only a draft can be edited" belongs to the quote, since a line does not know the status of its quote.
+
+A quote also points to a client, and the real risk is a quote pointing to a client that does not exist, which the domain cannot check without the database.
 
 ## Decision
 
-- **`Quote` is the aggregate root.** Its lines are only reached through it: `quote.AddLine(...)`, never `quote.Lines.Add(...)`. Lines are exposed read-only.
-- **`QuoteLine` is an entity, local to its quote.** A line is edited over time (change its quantity, remove it), so it must be found again: it has an `Id`, meaningful only inside its quote.
-- **`Quote` references its client by `ClientId`**, not by a `Client` object. `Client` is its own aggregate.
-- **Invariants of `Quote`:**
-  - a single currency for all the lines and discounts;
-  - always one client (`ClientId` set);
-  - the total is **computed**, never stored, so it cannot drift from the lines;
-  - at least one line to be **sent**; an empty draft is allowed;
-  - no maximum number of lines;
-  - the total is never negative. A refund or a credit note never goes through a quote: it will be a **separate document**, attached to an invoice.
-- **Invariants of `QuoteLine`:** a description, a quantity **> 0** in `decimal` (a line of 0 units makes no sense; half a day can be billed), a unit price **≥ 0**. A line at €0 is a **non-billable line**, included elsewhere (in a package) but shown on the quote. Offering a service is done with a **100 % discount**, not with a price of 0.
-- **Discounts live at both levels:** on a line and on the quote total. Line discounts are applied first, then the total's.
-- **Lifecycle:** `Draft` → `Sent` → `Accepted` or `Refused`. Only a draft can be edited. An **accepted** quote is final. A **refused** quote can go back to `Draft` to be reworked.
-- **Lines are free text** (description, quantity, unit price). No product catalogue for the MVP.
-- **`QuoteLine` has a single public constructor**, no `Create` / `Rehydrate` factories: lines are always created new (by `Quote.AddLine`, later), and EF Core rebuilds entities through reflection. Following ADR 0002, factories are only justified when two entry points have different invariants.
+- **`Quote` is the aggregate root.** Lines are reached through it only: `AddLine`, `UpdateLine(lineId, …)`, `RemoveLine(lineId)`, never `quote.Lines.Add(…)`. They are exposed read-only.
+- **`BillingLine` is an entity local to its document** (shared type, ADR 0024): a line is edited over time, so it has an `Id`, meaningful inside its document.
+- **`BillingLine.Update(…)` is `internal`**: only the Domain can call it. It validates its own rules, and the root checks the document's rules (the line exists, the currency matches, the quote is a draft). **All or nothing:** every value is validated before any is assigned.
+- **One `UpdateLine` for the whole line**, not one method per field: no field has a behaviour of its own, and the user's action is "edit the line".
+- **Other aggregates are referenced by a plain `Guid`** (`SellerId`, `ClientId`), the domain only rejects `Guid.Empty`. The existence of the client is checked by the use case that creates the quote, through a repository port.
+- **Invariants of the quote:** one currency for all lines and discounts; one client; at least one line to be sent (an empty draft is allowed); no maximum number of lines; a total that is never negative (a refund is a separate document, never a quote); totals **computed, never stored**, so they cannot drift from the lines.
+- **Invariants of a line:** a description, a quantity `> 0` in `decimal` (half a day can be billed), a unit price `≥ 0`. A line at €0 is a non-billable line shown on the quote; offering a service is a 100 % discount, not a price of 0.
+- **Lines are free text**; no product catalogue in the MVP.
+- Lifecycle: ADR 0018.
 
 ## Consequences
 
-- Every rule of the quote is checked in one place, the root. A line in dollars cannot slip into a quote in euros.
-- Saving is all or nothing: one transaction = one aggregate.
-- Computing the total on every read costs a loop over the lines, negligible for a quote.
-- **Price paid:** more code than public lists (`AddLine`, `RemoveLine`, read-only exposure), and the order of discounts is now a business rule to test.
-- A refused quote that goes back to draft loses the trace of what the client refused. Accepted for the MVP; versioning quotes would fix it later.
+- Every rule is checked in one place, the root; a line in dollars cannot slip into a quote in euros, and a sent quote cannot be altered through one of its lines.
+- Saving is all or nothing: one transaction, one aggregate.
+- **Price paid:**
+  - more code than public lists (`AddLine`, `RemoveLine`, read-only exposure);
+  - `UpdateLine` receives every field, even unchanged ones, and says less about the intent than `ChangeLineQuantity` would. If a field gains a rule of its own, a dedicated method is extracted;
+  - a wrong kind of `Guid` (a line id where a client id is expected) is only caught **at runtime**, by the existence check, and only if every entry point goes through it. A test on the use case must cover the "unknown client" case;
+  - a declined quote sent back to draft loses the trace of what the client declined (no versioning).
 - Alternatives set aside:
-  - **`QuoteLine` as a value object**: simpler, but "change the quantity of line 3" would mean rebuilding the line and finding it by position;
-  - **a product catalogue** with preset prices: a feature of its own, and a second aggregate. Postponed after the MVP.
+  - **`BillingLine` as a value object** replaced on each edit: "change the quantity of line 3" would mean rebuilding it and finding it by position;
+  - **one method per field**: four relay methods on the root and four on the line, for no difference in behaviour;
+  - **the line holds a reference to its quote** to check the status itself: a two-way dependency;
+  - **a strongly typed `ClientId`**: safer at compile time, but a type per entity and conversions to write for a confusion the existence check already catches. To reconsider if ids get mixed up in practice;
+  - **a product catalogue**: a feature of its own and a second aggregate, after the MVP.

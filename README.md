@@ -1,61 +1,50 @@
 # ChaChing
 
-The Billing App for creative freelancers.
+A billing application for creative freelancers: quotes, invoices and payments, with the rules of French invoicing built into the model.
 
-**Stack:** .NET 10 · C# · xUnit — then SQL Server, EF Core, ASP.NET Core and Angular.
+> **Work in progress.** The project is built from the inside out, design first: the domain is complete and tested, the application layer is under way, the rest is planned. See the [roadmap](docs/roadmap.md).
 
-## Architecture
+**Stack:** .NET 10 · C# · xUnit — then EF Core, SQL Server, ASP.NET Core and Angular.
 
-The target architecture. 
-Only the **Domain** exists today, the other layers will be created when needed.
+## What it is about
 
+Billing looks simple and is not. A few of the problems the model solves:
+
+- **A sent document must never change.** The parties' details are frozen into it when it is sent ([ADR 0012](docs/adr/0012-multi-seller-and-snapshots.md)).
+- **Invoice numbers have no gaps**, by law, even when a draft is deleted or a transaction fails ([ADR 0013](docs/adr/0013-gapless-numbering.md)).
+- **VAT is computed per rate**, with a discount on the total shared between rates, to the cent ([ADR 0020](docs/adr/0020-vat-breakdown-pro-rata.md)).
+- **A quote is invoiced once**, and the rule is enforced at three levels: domain, use case, database ([architecture §5](docs/architecture.md#5-where-a-rule-lives)).
+- **Franchise en base**: an exempt seller can never print a VAT amount next to the "art. 293 B" mention ([ADR 0014](docs/adr/0014-vat-rate-per-line.md)).
+
+## Design
+
+The design is documented before it is coded, and each choice records **the price paid and the alternatives set aside**.
+
+| Document | What it answers |
+|---|---|
+| [Architecture](docs/architecture.md) | How is it built? Context, layers, ports and adapters, where a rule lives, testing strategy |
+| [Domain model](docs/domain-model.md) | What does the business look like? Language, aggregates, lifecycles, how amounts are computed |
+| [Use cases](docs/use-cases.md) | What can a freelancer do? Catalogue, ports, sequences |
+| [Roadmap](docs/roadmap.md) | Where is it going, and in what order? |
+| [Decisions](docs/adr/README.md) | Why this way and not another? 19 ADRs |
+
+```mermaid
+flowchart BT
+    API["Api ⬜"] --> APP
+    API --> INF["Infrastructure ⬜"]
+    INF --> APP["Application 🔨"]
+    APP --> DOM["Domain ✅<br/>depends on nothing"]
 ```
-                    ┌──────────────────────┐
-                    │  web                 │  Angular, outside the .NET solution
-                    │  (front end)         │  calls the API over HTTP
-                    └──────────┬───────────┘
-                               │ HTTP / JSON
-┌──────────────────────────────▼───────────────────────────────┐
-│  ChaChing.Api              ASP.NET Core                      │
-│  endpoints, validation, auth, composition root               │
-│  (wires the implementations to the ports)                    │
-└───────────┬──────────────────────────────────┬───────────────┘
-            │                                  │
-┌───────────▼──────────────┐     ┌─────────────▼───────────────┐
-│  ChaChing.Application    │     │  ChaChing.Infrastructure    │
-│  use cases               │◄────┤  EF Core, SQL Server,       │
-│  CreateQuote,            │     │  payment provider…          │
-│  ConvertToInvoice…       │     │  = the adapters that        │
-│  + the ports (interfaces)│     │  implement the ports        │
-└───────────┬──────────────┘     └─────────────┬───────────────┘
-            │                                  │
-┌───────────▼──────────────────────────────────▼───────────────┐
-│  ChaChing.Domain                                             │
-│  Client, Money, Discount, then Quote and Invoice             │
-│  depends on NOTHING: no EF Core, no ASP.NET, no database     │
-└──────────────────────────────────────────────────────────────┘
-```
 
-**The rule:** dependencies point towards the Domain, never the other way round. 
-The Domain knows nothing about the database or HTTP, so business rules are tested without starting anything.
+Dependencies point towards the Domain, which knows nothing about the database or HTTP: the business rules are tested without starting anything.
 
-## Solution layout
+## Status
 
-```
-ChaChing/
-├── ChaChing.slnx
-├── src/
-│   ├── ChaChing.Domain/             ✅
-│   ├── ChaChing.Application/        (to come)
-│   ├── ChaChing.Infrastructure/     (to come)
-│   └── ChaChing.Api/                (to come)
-├── tests/
-│   ├── ChaChing.Domain.Tests/       ✅
-│   ├── ChaChing.Application.Tests/  (to come)
-│   └── ChaChing.IntegrationTests/   (to come)
-├── web/                             (to come: Angular, same repository, outside the solution)
-└── docs/adr/                        design decisions
-```
+| Layer | Status |
+|---|---|
+| Domain | ✅ 235 tests |
+| Application | 🔨 first use case |
+| Persistence, API, Angular, delivery | ⬜ planned |
 
 ## Getting started
 
@@ -64,6 +53,15 @@ dotnet build
 dotnet test
 ```
 
-## Design decisions
+Requires the .NET 10 SDK.
 
-Every design decision is recorded as an ADR, with the alternatives set aside and the price paid: see [`docs/adr`](docs/adr/README.md).
+## Repository layout
+
+```
+ChaChing/
+├── ChaChing.slnx
+├── src/        Domain ✅ · Application 🔨 · Infrastructure, Api ⬜
+├── tests/      Domain.Tests ✅ · Application.Tests 🔨 · IntegrationTests ⬜
+├── web/        Angular ⬜ (outside the .NET solution)
+└── docs/       architecture, domain model, use cases, roadmap, ADRs
+```
