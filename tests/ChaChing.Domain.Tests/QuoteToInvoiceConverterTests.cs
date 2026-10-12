@@ -16,7 +16,6 @@ namespace ChaChing.Domain.Tests
         static readonly SellerSnapshot sellerSnapshot = SellerSnapshot.From(seller);
         static readonly ClientSnapshot clientSnapshot = ClientSnapshot.From(client);
 
-        // A quote with a global discount and two different lines, so that every "taken over" assert can fail.
         static Quote QuoteWithStatus(QuoteStatus status)
         {
             Quote quote = Quote.CreateDraft(seller.Id, client.Id, Currency.EUR, new PercentageDiscount(10m));

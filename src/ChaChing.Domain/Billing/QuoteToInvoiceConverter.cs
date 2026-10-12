@@ -22,12 +22,7 @@ namespace ChaChing.Domain.Billing
                 invoice.AddLine(newLine);
             }
 
-
-
             return invoice;
         }
-
-        #region Validation
-        #endregion
     }
 }
