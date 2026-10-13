@@ -13,12 +13,12 @@ namespace ChaChing.Application.UseCases
             _repository = repository;
         }
 
-        public Guid SetUpSeller(SetUpSellerCommand command)
+        public async Task<Guid> SetUpSellerAsync(SetUpSellerCommand command, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(command);
 
             Seller seller = Seller.Create(command.LegalName, command.Address, command.Siret, command.VatRegime, command.VatNumber);
-            _repository.Add(seller);
+            await _repository.AddAsync(seller, cancellationToken);
             return seller.Id;
         }
     }

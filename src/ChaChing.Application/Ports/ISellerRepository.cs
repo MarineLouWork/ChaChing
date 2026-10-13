@@ -4,7 +4,7 @@ namespace ChaChing.Application.Ports
 {
     public interface ISellerRepository
     {
-        void Add(Seller seller);
-        bool Exists(Guid id);
+        Task AddAsync(Seller seller, CancellationToken cancellationToken = default);
+        Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

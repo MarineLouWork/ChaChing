@@ -7,14 +7,13 @@ namespace ChaChing.Application.Tests.InMemoryAggregates
     {
         private readonly List<Seller> _sellers = new();
         public IReadOnlyList<Seller> Sellers => _sellers;
-        public void Add(Seller seller) => _sellers.Add(seller);
-
-        public bool Exists(Guid id)
+        public Task AddAsync(Seller seller, CancellationToken cancellationToken = default)
         {
-            if (Sellers.Any(x => x.Id == id))
-                return true;
-            else
-                return false;
+            _sellers.Add(seller);
+            return Task.CompletedTask;
         }
+
+        public Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) => Task.FromResult(_sellers.Any(x => x.Id == id));
+
     }
 }

@@ -15,15 +15,15 @@ namespace ChaChing.Application.UseCases
             _sellerRepository = sellerRepository;
         }
 
-        public Guid CreateClient(CreateClientCommand command)
+        public async Task<Guid> CreateClientAsync(CreateClientCommand command, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(command);
 
-            if (!_sellerRepository.Exists(command.SellerId))
+            if (!await _sellerRepository.ExistsAsync(command.SellerId, cancellationToken))
                 throw new ArgumentException("The seller doesn't exist.", nameof(command.SellerId));
 
             Client client = Client.Create(command.SellerId, command.Name, command.Email, command.Address, command.Siren);
-            _clientRepository.Add(client);
+            await _clientRepository.AddAsync(client, cancellationToken);
             return client.Id;
         }
     }

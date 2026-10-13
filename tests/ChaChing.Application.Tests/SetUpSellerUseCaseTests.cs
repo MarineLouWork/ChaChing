@@ -1,4 +1,4 @@
-﻿using ChaChing.Application.Commands;
+using ChaChing.Application.Commands;
 using ChaChing.Application.Tests.InMemoryAggregates;
 using ChaChing.Application.UseCases;
 using ChaChing.Domain.Common;
@@ -20,9 +20,9 @@ namespace ChaChing.Application.Tests
         SetUpSellerCommand command = new("Throne Industry", new Address("Castle Rock", "33033", "South", "GT"), "12345678901010", VatRegime.Subject, "FRBI123456789");
 
         [Fact]
-        public void SetUpSeller_ValidData_Success()
+        public async Task SetUpSeller_ValidData_Success()
         {
-            Guid idSeller = _useCase.SetUpSeller(command);
+            Guid idSeller = await _useCase.SetUpSellerAsync(command);
 
             Assert.NotEqual(Guid.Empty, idSeller);
             Assert.Single(_repository.Sellers);
@@ -31,23 +31,23 @@ namespace ChaChing.Application.Tests
         }
 
         [Fact]
-        public void SetUpSeller_InvalidSiret_ThrowsAndStoresNothing()
+        public async Task SetUpSeller_InvalidSiret_ThrowsAndStoresNothing()
         {
             SetUpSellerCommand invalid = command with { Siret = "1234567890123" };
 
-            var action = () => { _useCase.SetUpSeller(invalid); };
+            var action = async () => { await _useCase.SetUpSellerAsync(invalid); };
 
-            ArgumentException exception = Assert.Throws<ArgumentException>(action);
+            ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(action);
             Assert.Equal("siret", exception.ParamName);
             Assert.Empty(_repository.Sellers);
         }
 
         [Fact]
-        public void SetUpSeller_NullCommand_Throws()
+        public async Task SetUpSeller_NullCommand_Throws()
         {
-            var action = () => { _useCase.SetUpSeller(null!); };
+            var action = async () => { await _useCase.SetUpSellerAsync(null!); };
 
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(action);
+            ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(action);
             Assert.Equal("command", exception.ParamName);
         }
     }

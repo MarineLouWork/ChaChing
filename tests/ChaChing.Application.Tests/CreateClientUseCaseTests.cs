@@ -21,20 +21,20 @@ namespace ChaChing.Application.Tests
 
         private readonly CreateClientCommand _command = new(Guid.NewGuid(), "Arya Stark", "Stark@msn.fr", new Address("Winterfell Castle", "88088", "North", "GL"), "123456789");
 
-        private Seller AddSeller()
+        private async Task<Seller> AddSellerAsync()
         {
             Seller seller = Seller.Create("Throne Industry", new Address("Castle Rock", "33033", "South", "GT"), "12345678901010", VatRegime.Subject, "FROK123456789");
-            _sellerRepository.Add(seller);
+            await _sellerRepository.AddAsync(seller);
             return seller;
         }
 
         [Fact]
-        public void CreateClient_ExistingSeller_AddsClientToRepository()
+        public async Task CreateClient_ExistingSeller_AddsClientToRepository()
         {
-            Seller seller = AddSeller();
+            Seller seller = await AddSellerAsync();
             CreateClientCommand command = _command with { SellerId = seller.Id };
 
-            Guid idClient = _useCase.CreateClient(command);
+            Guid idClient = await _useCase.CreateClientAsync(command);
 
             Client stored = Assert.Single(_clientRepository.Clients);
             Assert.Equal(idClient, stored.Id);
@@ -43,37 +43,37 @@ namespace ChaChing.Application.Tests
         }
 
         [Fact]
-        public void CreateClient_UnknownSeller_ThrowsAndStoresNothing()
+        public async Task CreateClient_UnknownSeller_ThrowsAndStoresNothing()
         {
-            AddSeller();
+            await AddSellerAsync();
             CreateClientCommand command = _command with { SellerId = Guid.NewGuid() };
 
-            var action = () => { _useCase.CreateClient(command); };
+            var action = async () => { await _useCase.CreateClientAsync(command); };
 
-            ArgumentException exception = Assert.Throws<ArgumentException>(action);
+            ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(action);
             Assert.Equal(nameof(CreateClientCommand.SellerId), exception.ParamName);
             Assert.Empty(_clientRepository.Clients);
         }
 
         [Fact]
-        public void CreateClient_InvalidEmail_ThrowsAndStoresNothing()
+        public async Task CreateClient_InvalidEmail_ThrowsAndStoresNothing()
         {
-            Seller seller = AddSeller();
+            Seller seller = await AddSellerAsync();
             CreateClientCommand command = _command with { SellerId = seller.Id, Email = "not-an-email" };
 
-            var action = () => { _useCase.CreateClient(command); };
+            var action = async () => { await _useCase.CreateClientAsync(command); };
 
-            ArgumentException exception = Assert.Throws<ArgumentException>(action);
+            ArgumentException exception = await Assert.ThrowsAsync<ArgumentException>(action);
             Assert.Equal("email", exception.ParamName);
             Assert.Empty(_clientRepository.Clients);
         }
 
         [Fact]
-        public void CreateClient_NullCommand_Throws()
+        public async Task CreateClient_NullCommand_Throws()
         {
-            var action = () => { _useCase.CreateClient(null!); };
+            var action = async () => { await _useCase.CreateClientAsync(null!); };
 
-            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(action);
+            ArgumentNullException exception = await Assert.ThrowsAsync<ArgumentNullException>(action);
             Assert.Equal("command", exception.ParamName);
         }
     }
