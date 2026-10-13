@@ -25,7 +25,7 @@ flowchart LR
 
 - Project, ports declared next to the use cases, an in-memory fake per port.
 - Use cases in the order of the freelancer's journey: [catalogue](use-cases.md#1-catalogue).
-- Built: `CreateClient` (the skeleton every other use case copies: port, fake, test, code) and `SetUpSeller`. Next: `CreateQuote`.
+- Built: `CreateClient` (the skeleton every other use case copies: port, fake, test, code) `SetUpSeller` and `CreateDraftQuote`. Ports are asynchronous ([ADR 0038](adr/0038-repository-ports-are-asynchronous.md)). Next: `AddQuoteLine`.
 
 ## 3. Persistence ⬜
 

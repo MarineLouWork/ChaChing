@@ -8,7 +8,7 @@ A client belongs to a seller (`Client.SellerId`, [ADR 0012](0012-multi-seller-an
 
 ## Decision
 
-- `ISellerRepository` exposes `bool Exists(Guid id)`. **`CreateClient` needs to know whether the seller exists, not to read it**, so it does not load a `Seller`. A `Get` will come with the first use case that reads seller data (`CreateQuote`, for the VAT regime).
+- `ISellerRepository` exposes `bool Exists(Guid id)`. **`CreateClient` needs to know whether the seller exists, not to read it**, so it does not load a `Seller`. A `Get` will come with the first use case that reads seller data (`AddQuoteLine`, for the VAT regime).
 - `CreateClient` checks before building the client. An unknown seller raises an `ArgumentException` whose `ParamName` is `SellerId`; nothing is stored.
 - The tests put a seller **directly in the fake repository**, not through `SetUpSeller`: a use case never calls another use case, and tests stay independent.
 

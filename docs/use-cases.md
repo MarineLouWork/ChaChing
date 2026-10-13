@@ -12,7 +12,8 @@ In the order of a freelancer's journey.
 |---|---|---|---|---|---|
 | 1 | **CreateClient** | adds a client for a seller | the seller exists ([ADR 0036](adr/0036-seller-existence-checked-by-use-case.md)) | `IClientRepository`, `ISellerRepository` | ✅ |
 | 2 | **SetUpSeller** | registers the seller | "one seller per account" waits for the notion of account (authentication) | `ISellerRepository` | ✅ |
-| 3 | **CreateQuote** | creates a draft, manages its lines | the client exists and belongs to the seller; default VAT rate from the seller's regime | `IQuoteRepository`, `IClientRepository`, `ISellerRepository` | ⬜ |
+| 3 | **CreateDraftQuote** | creates an empty draft | the client exists and belongs to the seller, one error for both ([ADR 0039](adr/0039-client-ownership-checked-by-use-case.md)) | `IQuoteRepository`, `IClientRepository` | ✅ |
+| 3b | **AddQuoteLine** | adds a line to a draft (update and remove: separate use cases, when needed) | the quote exists; default VAT rate from the seller's regime | `IQuoteRepository`, `ISellerRepository` | ⬜ |
 | 4 | **SendQuote** | sends the quote: number, snapshots | reuse the quote's number if it has one, else take the next; one transaction with the save | + `IBillingNumberGenerator`, `IClock` | ⬜ |
 | 5 | **Accept / Decline / Reopen quote** | records the client's answer | — | `IQuoteRepository` | ⬜ |
 | 6 | **ConvertToInvoice** | accepted quote → draft invoice | never twice for the same quote ([ADR 0034](adr/0034-already-invoiced-rule-in-use-case.md)) | `IQuoteRepository`, `IInvoiceRepository` | ⬜ (converter ✅) |
@@ -30,9 +31,9 @@ A port appears with the first use case that needs it ([ADR 0031](adr/0031-reposi
 
 | Port | Answers | Appears with |
 |---|---|---|
-| `IClientRepository` | create, find a client | #1 |
+| `IClientRepository` | add a client, does it exist for this seller | #1, #3 |
 | `ISellerRepository` | add a seller, does it exist (`Get` when a use case reads it) | #1 |
-| `IQuoteRepository` | find, add, save a quote | #3 |
+| `IQuoteRepository` | add a quote (find, save with #3b) | #3 |
 | `IBillingNumberGenerator` | the next number for (seller, type, year), inside the caller's transaction | #4 |
 | `IInvoiceRepository` | find, add, save an invoice; the statuses of the invoices of a quote | #6 |
 | `IClock` | today's date | #4, #8 |

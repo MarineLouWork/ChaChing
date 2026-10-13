@@ -42,5 +42,7 @@ The numbers are stable identifiers (the code refers to them), so there are gaps:
 | [0034](0034-already-invoiced-rule-in-use-case.md) | "Already invoiced" is decided by the use case; the port returns statuses |
 | [0035](0035-ports-exchange-aggregates-not-commands.md) | Ports exchange aggregates; the use case builds them from the command |
 | [0036](0036-seller-existence-checked-by-use-case.md) | "The seller exists" is checked by the use case through `ISellerRepository.Exists` |
+| [0038](0038-repository-ports-are-asynchronous.md) | Repository ports are asynchronous from the start |
+| [0039](0039-client-ownership-checked-by-use-case.md) | "The client belongs to the seller" is checked by the use case, one error for both cases |
 
 See also: [architecture](../architecture.md) · [domain model](../domain-model.md) · [use cases](../use-cases.md) · [roadmap](../roadmap.md)
