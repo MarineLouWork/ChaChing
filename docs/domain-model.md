@@ -302,7 +302,7 @@ Rounding and edge cases (a zero total keeps its breakdown): [ADR 0003](adr/0003-
 | **Money** | at most 2 decimals, a defined currency; operations never mix currencies |
 | **Discount** | rate from 0 to 100 %, fixed amount not negative; result floored at zero; same currency as the total |
 | **BillingLine** | description required, quantity > 0, unit price ≥ 0 |
-| **Seller** | SIRET of 14 digits, VAT regime defined, VAT number normalised |
+| **Seller** | SIRET of 14 digits, VAT regime defined, VAT number `FR` + key + the SIREN of its SIRET ([ADR 0037](adr/0037-seller-vat-number-format-and-siret-consistency.md)) |
 | **Client** | name, email, address required; belongs to a seller |
 | **Quote** | one currency; lines editable in draft only; sent with ≥ 1 line, a valid-until date not before the issue date, snapshots of its own seller and client, a `QUO` number; an exempt seller cannot send a line with VAT; keeps its number forever |
 | **Invoice** | same as the quote, with an `INV` number and a due date; issued once and then immutable; paid on or after the issue date; cancelled only from `Issued` |

@@ -17,6 +17,7 @@ The numbers are stable identifiers (the code refers to them), so there are gaps:
 | [0010](0010-quote-aggregate.md) | `Quote` is an aggregate root; lines edited through it, other aggregates referenced by id |
 | [0015](0015-vocabulary-follows-en-16931.md) | The domain vocabulary follows EN 16931 |
 | [0027](0027-argument-validator.md) | `ArgumentValidator` for technical preconditions, business rules stay in the aggregates |
+| [0037](0037-seller-vat-number-format-and-siret-consistency.md) | The seller's VAT number: French format, consistent with its SIRET |
 
 ## Billing rules
 
