@@ -46,7 +46,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new FixedAmountDiscount(new Money(-0.01m, Currency.EUR));
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("amount", exception.ParamName);
         }
 
         [Fact]
@@ -54,7 +55,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => threeEurosDiscount.Apply(new Money(3m, Currency.GBP));
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("currency", exception.ParamName);
         }
         #endregion
 
@@ -89,7 +91,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new PercentageDiscount(rate);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("rate", exception.ParamName);
         }
         #endregion
 

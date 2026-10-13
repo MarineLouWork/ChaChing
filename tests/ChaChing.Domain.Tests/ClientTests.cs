@@ -64,7 +64,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Client.Rehydrate(Guid.Empty, sellerId, validName, validEmail, address);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("id", exception.ParamName);
         }
 
         [Theory]
@@ -87,7 +88,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Client.Create(sellerId, name!, validEmail, address); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("name", exception.ParamName);
         }
 
         [Theory]
@@ -99,7 +101,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Client.Create(sellerId, validName, email!, address); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("email", exception.ParamName);
         }
 
         [Fact]
@@ -119,7 +122,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => client.ChangeEmail(validName);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("email", exception.ParamName);
         }
 
         #region Seller, address, SIREN (ADR 0012)
@@ -147,7 +151,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Client.Create(sellerId, validName, validEmail, null!); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("address", exception.ParamName);
         }
 
         [Theory]
@@ -169,7 +174,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Client.Create(sellerId, validName, validEmail, address, siren);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("siren", exception.ParamName);
         }
         #endregion
     }

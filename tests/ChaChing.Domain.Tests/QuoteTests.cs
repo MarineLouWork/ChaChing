@@ -51,7 +51,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Quote.CreateDraft(sellerId, clientId, (Currency)999);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("currency", exception.ParamName);
         }
         #endregion
 
@@ -88,7 +89,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => quote.AddLine(Line(2m, 500m, Currency.GBP));
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("line", exception.ParamName);
             Assert.Empty(quote.Lines);
         }
 
@@ -99,7 +101,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => quote.AddLine(null!); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("line", exception.ParamName);
         }
         #endregion
 
@@ -273,7 +276,8 @@ namespace ChaChing.Domain.Tests
             // the description is valid and checked first: it must not be applied alone
             var action = () => quote.UpdateLine(line.Id, "new description", 0m, new Money(50m, Currency.EUR));
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("quantity", exception.ParamName);
             Assert.Equal("valid description", line.Description);
             Assert.Equal(1m, line.Quantity);
             Assert.Equal(new Money(100m, Currency.EUR), line.UnitPrice);
@@ -288,7 +292,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => quote.UpdateLine(line.Id, "new description", 2m, new Money(50m, Currency.GBP));
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("unitPrice", exception.ParamName);
             Assert.Equal("valid description", line.Description);
             Assert.Equal(new Money(100m, Currency.EUR), line.UnitPrice);
         }

@@ -30,7 +30,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new Money(10m, (Currency)888);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("Currency", exception.ParamName);
         }
 
         [Fact]
@@ -55,7 +56,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => tenEuros.Add(twelveDollars);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("currency", exception.ParamName);
         }
 
         [Fact]
@@ -80,7 +82,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => tenEuros.Subtract(twelveDollars);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("currency", exception.ParamName);
         }
 
         [Theory]
@@ -120,7 +123,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Money.Zero((Currency)999);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("Currency", exception.ParamName);
         }
 
         [Fact]

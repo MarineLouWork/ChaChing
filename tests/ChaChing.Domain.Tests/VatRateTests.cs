@@ -34,7 +34,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => VatRate.Of(percent);
 
-            Assert.Throws<ArgumentOutOfRangeException>(action);
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(action);
+            Assert.Equal("percent", exception.ParamName);
         }
 
         [Theory]

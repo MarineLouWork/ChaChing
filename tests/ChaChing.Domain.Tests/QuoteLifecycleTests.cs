@@ -78,7 +78,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => quote.MarkAsSent(null!, issueDate, validUntil, sellerSnapshot, clientSnapshot);
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("number", exception.ParamName);
         }
 
         [Fact]
@@ -101,7 +102,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => quote.MarkAsSent(number, issueDate, issueDate.AddDays(-1), sellerSnapshot, clientSnapshot);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("validUntil", exception.ParamName);
             Assert.Equal(QuoteStatus.Draft, quote.Status);
         }
 
@@ -321,7 +323,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => quote.MarkAsSent(number, issueDate, validUntil, null!, clientSnapshot); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("seller", exception.ParamName);
         }
 
         [Fact]
@@ -331,7 +334,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => quote.MarkAsSent(number, issueDate, validUntil, sellerSnapshot, null!); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("client", exception.ParamName);
         }
 
         [Fact]

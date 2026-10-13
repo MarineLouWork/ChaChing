@@ -28,7 +28,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new BillingLine(description!, 2m, fiveHundredEuros);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("description", exception.ParamName);
         }
 
         [Theory]
@@ -38,7 +39,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new BillingLine("valid description", quantity, fiveHundredEuros);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("quantity", exception.ParamName);
         }
 
         [Fact]
@@ -62,7 +64,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new BillingLine("valid description", 2m, new Money(-0.01m, Currency.EUR));
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("unitPrice", exception.ParamName);
         }
 
         [Theory]

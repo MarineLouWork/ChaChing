@@ -22,14 +22,15 @@ namespace ChaChing.Domain.Tests
         }
 
         [Theory]
-        [InlineData("", "13001", "Marseille", "FR")]
-        [InlineData("12 rue de la Paix", " ", "Marseille", "FR")]
-        [InlineData("12 rue de la Paix", "13001", null, "FR")]
-        public void Create_WithMissingPart_Throws(string? line, string? postalCode, string? city, string countryCode)
+        [InlineData("", "13001", "Marseille", "FR", "Line")]
+        [InlineData("12 rue de la Paix", " ", "Marseille", "FR", "PostalCode")]
+        [InlineData("12 rue de la Paix", "13001", null, "FR", "City")]
+        public void Create_WithMissingPart_Throws(string? line, string? postalCode, string? city, string countryCode, string expectedParamName)
         {
             var action = () => new Address(line!, postalCode!, city!, countryCode); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal(expectedParamName, exception.ParamName);
         }
 
         [Theory]
@@ -41,7 +42,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new Address("12 rue de la Paix", "13001", "Marseille", countryCode);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("CountryCode", exception.ParamName);
         }
     }
 }

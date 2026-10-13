@@ -36,7 +36,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new BillingNumber((TypeDocument)999, 2026, 42);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("TypeDocument", exception.ParamName);
         }
 
         [Theory]
@@ -46,7 +47,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new BillingNumber(TypeDocument.QUO, 2026, sequence);
 
-            Assert.Throws<ArgumentOutOfRangeException>(action);
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(action);
+            Assert.Equal("sequence", exception.ParamName);
         }
 
         [Theory]
@@ -56,7 +58,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => new BillingNumber(TypeDocument.QUO, year, 1);
 
-            Assert.Throws<ArgumentOutOfRangeException>(action);
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(action);
+            Assert.Equal("year", exception.ParamName);
         }
     }
 }

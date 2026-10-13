@@ -109,7 +109,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => invoice.MarkedAsIssued(null!, issueDate, dueDate, sellerSnapshot, clientSnapshot); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("number", exception.ParamName);
         }
 
         [Fact]
@@ -119,7 +120,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => invoice.MarkedAsIssued(number, issueDate, dueDate, null!, clientSnapshot); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("seller", exception.ParamName);
         }
 
         [Fact]
@@ -129,7 +131,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => invoice.MarkedAsIssued(number, issueDate, dueDate, sellerSnapshot, null!); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("client", exception.ParamName);
         }
 
         [Fact]

@@ -73,7 +73,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Invoice.CreateDraft(sellerId, clientId, (Currency)999);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("currency", exception.ParamName);
         }
         #endregion
 
@@ -97,7 +98,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => invoice.AddLine(line);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("line", exception.ParamName);
         }
 
         [Fact]
@@ -107,7 +109,8 @@ namespace ChaChing.Domain.Tests
 
             var action = () => invoice.AddLine(null!);
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("line", exception.ParamName);
         }
         #endregion
 

@@ -37,7 +37,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Seller.Create(legalName!, address, validSiret, VatRegime.Subject); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("legalName", exception.ParamName);
         }
 
         [Theory]
@@ -49,7 +50,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Seller.Create("Arya Stark Design", address, siret, VatRegime.Subject);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("siret", exception.ParamName);
         }
 
         [Fact]
@@ -57,7 +59,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Seller.Create("Arya Stark Design", address, validSiret, (VatRegime)0);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("vatRegime", exception.ParamName);
         }
 
 
@@ -71,7 +74,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Seller.Create("Arya Stark Design", address, siret, VatRegime.Subject, vatNumber);
 
-            Assert.Throws<ArgumentException>(action);
+            var exception = Assert.Throws<ArgumentException>(action);
+            Assert.Equal("vatNumber", exception.ParamName);
         }
 
         [Fact]
@@ -79,7 +83,8 @@ namespace ChaChing.Domain.Tests
         {
             var action = () => Seller.Create("Arya Stark Design", null!, validSiret, VatRegime.Subject); // ! : null is forced on purpose, it is the case under test
 
-            Assert.Throws<ArgumentNullException>(action);
+            var exception = Assert.Throws<ArgumentNullException>(action);
+            Assert.Equal("address", exception.ParamName);
         }
 
         [Fact]
