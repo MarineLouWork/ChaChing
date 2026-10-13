@@ -11,7 +11,7 @@ namespace ChaChing.Domain.Tests
         [Fact]
         public void Create_WithValidData_IsCreated()
         {
-            Seller seller = Seller.Create(" Arya Stark Design ", address, "123 456 789 00012", VatRegime.Subject, " FR ON 123 456 789 ");
+            Seller seller = Seller.Create(" Arya Stark Design ", address, "123 456 789 00012", VatRegime.Subject, " fr on 123 456 789 ");
 
             Assert.NotEqual(Guid.Empty, seller.Id);
             Assert.Equal("Arya Stark Design", seller.LegalName);
