@@ -1,7 +1,7 @@
 ﻿using ChaChing.Application.Ports;
 using ChaChing.Domain.Parties;
 
-namespace ChaChing.Application.Tests.Repositories
+namespace ChaChing.Application.Tests.InMemoryAggregates
 {
     public class InMemoryClientRepository : IClientRepository
     {

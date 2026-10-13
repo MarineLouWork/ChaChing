@@ -11,7 +11,7 @@ namespace ChaChing.Domain.Parties
             Address = address ?? throw new ArgumentNullException(nameof(address));
             Siret = ValidateSiret(siret);
             VatRegime = ArgumentValidator.Enum(vatRegime, nameof(vatRegime));
-            VatNumber = ValidateVatNumber(vatNumber);
+            VatNumber = ValidateVatNumber(vatNumber, Siret);
         }
 
         public static Seller Create(string legalName, Address address, string siret, VatRegime vatRegime, string? vatNumber = null)
@@ -37,13 +37,27 @@ namespace ChaChing.Domain.Parties
             return digits;
         }
 
-        private static string? ValidateVatNumber(string? vatNumber)
+        private static string? ValidateVatNumber(string? vatNumber, string siret)
         {
             if (vatNumber is null)
                 return null;
             if (string.IsNullOrWhiteSpace(vatNumber))
                 throw new ArgumentException("The VAT number is blank: pass null if there is none.", nameof(vatNumber));
-            return vatNumber.Replace(" ", string.Empty).ToUpperInvariant();
+
+            vatNumber = vatNumber.Replace(" ", string.Empty).ToUpperInvariant();
+
+            if (!vatNumber.StartsWith("FR", StringComparison.Ordinal))
+                throw new ArgumentException("The VAT number should start with FR.", nameof(vatNumber));
+
+            if (vatNumber.Length != 13)
+                throw new ArgumentException("The VAT number should be 13 characters long.", nameof(vatNumber));
+
+            string siren = siret.Substring(0, 9);
+            string vatNumberSiren = vatNumber.Substring(4, 9);
+            if (siren != vatNumberSiren)
+                throw new ArgumentException("The VAT number should end with SIREN numbers.", nameof(vatNumber));
+
+            return vatNumber;
         }
 
         public override bool Equals(object? obj) => obj is Seller other && other.Id == Id;

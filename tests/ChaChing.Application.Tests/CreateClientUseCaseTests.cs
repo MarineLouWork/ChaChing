@@ -1,5 +1,5 @@
 using ChaChing.Application.Commands;
-using ChaChing.Application.Tests.Repositories;
+using ChaChing.Application.Tests.InMemoryAggregates;
 using ChaChing.Application.UseCases;
 using ChaChing.Domain.Common;
 using ChaChing.Domain.Parties;
@@ -23,7 +23,7 @@ namespace ChaChing.Application.Tests
 
         private Seller AddSeller()
         {
-            Seller seller = Seller.Create("Throne Industry", new Address("Castle Rock", "33033", "South", "GT"), "12345678901010", VatRegime.Subject, "FR12345678901");
+            Seller seller = Seller.Create("Throne Industry", new Address("Castle Rock", "33033", "South", "GT"), "12345678901010", VatRegime.Subject, "FROK123456789");
             _sellerRepository.Add(seller);
             return seller;
         }

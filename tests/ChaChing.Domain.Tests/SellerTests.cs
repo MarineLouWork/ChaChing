@@ -11,14 +11,14 @@ namespace ChaChing.Domain.Tests
         [Fact]
         public void Create_WithValidData_IsCreated()
         {
-            Seller seller = Seller.Create(" Arya Stark Design ", address, "123 456 789 00012", VatRegime.Subject, "fr 12 345678901");
+            Seller seller = Seller.Create(" Arya Stark Design ", address, "123 456 789 00012", VatRegime.Subject, " FR ON 123 456 789 ");
 
             Assert.NotEqual(Guid.Empty, seller.Id);
             Assert.Equal("Arya Stark Design", seller.LegalName);
             Assert.Equal(address, seller.Address);
             Assert.Equal(validSiret, seller.Siret);
             Assert.Equal(VatRegime.Subject, seller.VatRegime);
-            Assert.Equal("FR12345678901", seller.VatNumber);
+            Assert.Equal("FRON123456789", seller.VatNumber);
         }
 
         [Fact]
@@ -60,10 +60,16 @@ namespace ChaChing.Domain.Tests
             Assert.Throws<ArgumentException>(action);
         }
 
-        [Fact]
-        public void Create_WithBlankVatNumber_Throws()
+
+        [Theory]
+        [InlineData("12345678900012", "   ")]
+        [InlineData("12345678900012", "EN ON 123456789")]
+        [InlineData("12345678900012", "FR ON 1234")]
+        [InlineData("12345678900012", "FR ON 123444444")]
+        [InlineData("12345678900012", "FR ON 155456789")]
+        public void Create_WithInvalidVatNumber_Throws(string siret, string vatNumber)
         {
-            var action = () => Seller.Create("Arya Stark Design", address, validSiret, VatRegime.Subject, " ");
+            var action = () => Seller.Create("Arya Stark Design", address, siret, VatRegime.Subject, vatNumber);
 
             Assert.Throws<ArgumentException>(action);
         }

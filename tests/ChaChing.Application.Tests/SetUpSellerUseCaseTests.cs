@@ -1,5 +1,5 @@
 ﻿using ChaChing.Application.Commands;
-using ChaChing.Application.Tests.Repositories;
+using ChaChing.Application.Tests.InMemoryAggregates;
 using ChaChing.Application.UseCases;
 using ChaChing.Domain.Common;
 using ChaChing.Domain.Parties;
@@ -17,7 +17,7 @@ namespace ChaChing.Application.Tests
             _useCase = new SetUpSellerUseCase(_repository);
         }
 
-        SetUpSellerCommand command = new("Throne Industry", new Address("Castle Rock", "33033", "South", "GT"), "12345678901010", VatRegime.Subject, "FR12345678901");
+        SetUpSellerCommand command = new("Throne Industry", new Address("Castle Rock", "33033", "South", "GT"), "12345678901010", VatRegime.Subject, "FRBI123456789");
 
         [Fact]
         public void SetUpSeller_ValidData_Success()
