@@ -19,7 +19,7 @@ flowchart LR
 - `Client`, `Seller`, `Quote` (full lifecycle), `Invoice` (draft, issued, paid, cancelled, overdue derived).
 - Snapshots of the parties, gapless billing numbers, exempt-seller rules.
 - Quote-to-invoice conversion.
-- 235 unit tests, no mock, no database. 19 ADRs.
+- 239 unit tests, no mock, no database. 24 ADRs (the numbers have gaps, see the [index](adr/README.md)).
 
 ## 2. Application 🔨
 

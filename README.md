@@ -1,8 +1,9 @@
 # ChaChing
 
-A billing application for creative freelancers: quotes, invoices and payments, with the rules of French invoicing built into the model.
+The billing application for creative freelancers who want to hear the cash machine go "ChaChing" !
+The perfect app to manage quotes, invoices and payments, following French invoicing rules.
 
-> **Work in progress.** The project is built from the inside out, design first: the domain is complete and tested, the application layer is under way, the rest is planned. See the [roadmap](docs/roadmap.md).
+> **Work in progress.** The only goal of this project is to learn how to build an app applying Domain-Driven Design and Clean Architecture standards, and to learn how to code with Angular, with the help of AI but also in an Old School Style : by Myself. The project is built from the inside out, design first: the domain is complete and tested, the application layer is under way, the rest is planned. See the [roadmap](docs/roadmap.md).
 
 **Stack:** .NET 10 · C# · xUnit — then EF Core, SQL Server, ASP.NET Core and Angular.
 
@@ -20,13 +21,13 @@ Billing looks simple and is not. A few of the problems the model solves:
 
 The design is documented before it is coded, and each choice records **the price paid and the alternatives set aside**.
 
-| Document | What it answers |
-|---|---|
-| [Architecture](docs/architecture.md) | How is it built? Context, layers, ports and adapters, where a rule lives, testing strategy |
+| Document                             | What it answers                                                                              |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| [Architecture](docs/architecture.md) | How is it built? Context, layers, ports and adapters, where a rule lives, testing strategy   |
 | [Domain model](docs/domain-model.md) | What does the business look like? Language, aggregates, lifecycles, how amounts are computed |
-| [Use cases](docs/use-cases.md) | What can a freelancer do? Catalogue, ports, sequences |
-| [Roadmap](docs/roadmap.md) | Where is it going, and in what order? |
-| [Decisions](docs/adr/README.md) | Why this way and not another? 19 ADRs |
+| [Use cases](docs/use-cases.md)       | What can a freelancer do? Catalogue, ports, sequences                                        |
+| [Roadmap](docs/roadmap.md)           | Where is it going, and in what order?                                                        |
+| [Decisions](docs/adr/README.md)      | Why this way and not another? 24 ADRs                                                        |
 
 ```mermaid
 flowchart BT
@@ -40,11 +41,11 @@ Dependencies point towards the Domain, which knows nothing about the database or
 
 ## Status
 
-| Layer | Status |
-|---|---|
-| Domain | ✅ 235 tests |
-| Application | 🔨 first use case |
-| Persistence, API, Angular, delivery | ⬜ planned |
+| Layer                               | Status                  |
+| ----------------------------------- | ----------------------- |
+| Domain                              | ✅ 239 tests            |
+| Application                         | 🔨 3 use cases, 12 tests |
+| Persistence, API, Angular, delivery | ⬜ planned              |
 
 ## Getting started
 

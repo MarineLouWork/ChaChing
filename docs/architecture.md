@@ -121,7 +121,7 @@ The question to ask: *does the rule need only this object's state and business v
 
 | Level | What it proves | Tools | Status |
 |---|---|---|---|
-| **Domain tests** | every business rule, one test per rule, boundaries on both sides | xUnit | ✅ 235 tests, no mock, no database |
+| **Domain tests** | every business rule, one test per rule, boundaries on both sides | xUnit | ✅ 239 tests, no mock, no database |
 | **Application tests** | each use case, with an in-memory fake behind the port | xUnit, hand-written fakes | 🔨 |
 | **Integration tests** | the real adapters against a real SQL Server, including the unique index | Testcontainers | ⬜ |
 | **API tests** | HTTP contract, status codes, `ProblemDetails` | `WebApplicationFactory` | ⬜ |
