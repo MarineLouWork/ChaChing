@@ -1,9 +1,9 @@
 # ChaChing
 
-The billing application for creative freelancers who want to hear the cash machine go "ChaChing" !
-The perfect app to manage quotes, invoices and payments, following French invoicing rules.
+The Billing application for Creative Freelancers who want to hear the cash machine go "ChaChing" !
+A complete app to manage quotes, invoices and payments, following French invoicing rules.
 
-> **Work in progress.** The only goal of this project is to learn how to build an app applying Domain-Driven Design and Clean Architecture standards, and to learn how to code with Angular, with the help of AI but also in an Old School Style : by Myself. The project is built from the inside out, design first: the domain is complete and tested, the application layer is under way, the rest is planned. See the [roadmap](docs/roadmap.md).
+> **Work in progress.** The only goal of this project is to learn how to build an app applying Domain-Driven Design and Clean Architecture standards, and to learn how to code with Angular, with the help of Claude AI. The project is built from the inside out, design first: the domain is complete and tested, the application layer is under way, the rest is planned. See the [roadmap](docs/roadmap.md).
 
 **Stack:** .NET 10 · C# · xUnit — then EF Core, SQL Server, ASP.NET Core and Angular.
 
