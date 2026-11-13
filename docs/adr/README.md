@@ -44,5 +44,6 @@ The numbers are stable identifiers (the code refers to them), so there are gaps:
 | [0036](0036-seller-existence-checked-by-use-case.md) | "The seller exists" is checked by the use case through `ISellerRepository.Exists` |
 | [0038](0038-repository-ports-are-asynchronous.md) | Repository ports are asynchronous from the start |
 | [0039](0039-client-ownership-checked-by-use-case.md) | "The client belongs to the seller" is checked by the use case, one error for both cases |
+| [0040](0040-architecture-test-guards-api-from-infrastructure.md) | An architecture test keeps controllers away from Infrastructure |
 
 See also: [architecture](../architecture.md) · [domain model](../domain-model.md) · [use cases](../use-cases.md) · [roadmap](../roadmap.md)

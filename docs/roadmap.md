@@ -41,6 +41,7 @@ flowchart LR
 - REST endpoints, `ProblemDetails` for errors, validation, versioning, CORS.
 - Authentication, and the **tenant rule**: every query scoped to the authenticated seller.
 - Logging and tracing (Serilog, OpenTelemetry).
+- An architecture test: only `Program.cs` may use Infrastructure, never a controller ([ADR 0040](adr/0040-architecture-test-guards-api-from-infrastructure.md)).
 - A decision record on how far to go with CQRS: a simple split between commands and queries, without a mediator library.
 
 ## 5. Front end ⬜
