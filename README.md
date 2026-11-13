@@ -1,9 +1,13 @@
 # ChaChing
 
+[![Tests](https://github.com/MarineLouWork/ChaChing/actions/workflows/ci.yml/badge.svg)](https://github.com/MarineLouWork/ChaChing/actions/workflows/ci.yml)
+
 The Billing application for Creative Freelancers who want to hear the cash machine go "ChaChing" !
 A complete app to manage quotes, invoices and payments, following French invoicing rules.
 
 > **Work in progress.** This project is built beside my actual job as a developer. The only goal of this project is to learn how to build an app applying Domain-Driven Design and Clean Architecture standards, and to learn how to code with Angular, with the help of Claude AI. The project is built from the inside out, design first: the domain is complete and tested, the application layer is under way, the rest is planned. See the [roadmap](docs/roadmap.md).
+
+**Built with an AI pair, with a clear split.** I write the code for what I am learning: the domain model, the use cases, every pattern that is new to me. Claude writes the parts I already know how to build, under my instructions. Claude also researches the business rules (French invoicing law, VAT, numbering) and lays out the options with their trade-offs, and I make the design decisions. SOLID, Clean Architecture and hexagonal architecture are explained to me, then applied together, decision by decision, each one recorded in an ADR.
 
 **Stack:** .NET 10 · C# · xUnit — then EF Core, SQL Server, ASP.NET Core and Angular.
 
@@ -27,7 +31,7 @@ The design is documented before it is coded, and each choice records **the price
 | [Domain model](docs/domain-model.md) | What does the business look like? Language, aggregates, lifecycles, how amounts are computed |
 | [Use cases](docs/use-cases.md)       | What can a freelancer do? Catalogue, ports, sequences                                        |
 | [Roadmap](docs/roadmap.md)           | Where is it going, and in what order?                                                        |
-| [Decisions](docs/adr/README.md)      | Why this way and not another? 24 ADRs                                                        |
+| [Decisions](docs/adr/README.md)      | Why this way and not another? 25 ADRs                                                        |
 
 ```mermaid
 flowchart BT

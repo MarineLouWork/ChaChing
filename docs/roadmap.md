@@ -51,7 +51,8 @@ flowchart LR
 
 ## 6. Delivery ⬜
 
-- Dockerfile, GitHub Actions (build, test, integration tests), deployment.
+- GitHub Actions: build and unit tests on every push ✅ (`.github/workflows/ci.yml`). Still to add: integration tests.
+- Dockerfile, deployment.
 - README and docs reviewed for a reader who has never seen the project.
 
 ## Beyond the MVP
